@@ -19,7 +19,8 @@
     pickup:   { label: '冰饮',   w: 1, h: 1, shade: '#b8e1e8', edge: '#5794a3' },
     fries:    { label: '薯条',   w: 1, h: 2, shade: '#f9cd70', edge: '#ad7633' },
     rings:    { label: '洋葱圈', w: 2, h: 1, shade: '#f1d9a8', edge: '#a87c4c' },
-    sandwich: { label: '三明治', w: 3, h: 1, shade: '#d2e0a3', edge: '#7a9052' }
+    sandwich: { label: '三明治', w: 3, h: 1, shade: '#d2e0a3', edge: '#7a9052' },
+    sauce:    { label: '蘸酱',   w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' }
   };
   const levels = [
     {
@@ -40,6 +41,20 @@
       instruction: ['冰饮只能放进圆形杯位。', '热汉堡与冰饮仍然不能挨边。'],
       hint: '先找到圆形杯位，再安排热汉堡。',
       solution: [['pickup', 1, 1], ['hero', 2, 2], ['fries', 0, 1], ['rings', 0, 3], ['sandwich', 0, 0]]
+    },
+    {
+      title: '旋转装盒', size: 4, rotate: true, foods: ['hero', 'fries', 'rings', 'sandwich'],
+      dividers: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
+      instruction: ['选中长条餐品，点「旋转」横竖换。', '深色隔板占了位置，餐品要绕开。'],
+      hint: '两侧有窄格，试试把三明治竖过来。',
+      solution: [['sandwich', 3, 0, true], ['hero', 0, 2], ['fries', 0, 0], ['rings', 2, 2, true]]
+    },
+    {
+      title: '成套出餐', size: 4, rotate: true, heat: true, cup: { x: 3, y: 0 }, pairSauce: true,
+      foods: ['hero', 'pickup', 'fries', 'sauce', 'sandwich'],
+      instruction: ['薯条和蘸酱要上下或左右挨着。', '冰饮进杯位，冷热仍要分开。'],
+      hint: '先给薯条留一格放蘸酱的位置。',
+      solution: [['pickup', 3, 0], ['hero', 0, 0], ['sandwich', 0, 2], ['fries', 2, 1, true], ['sauce', 2, 0]]
     }
   ];
   const cues = {
@@ -49,12 +64,16 @@
     heat: '热汉堡和冰饮不能挨边。',
     cup: '冰饮只能放进画圆的杯位。',
     reserved: '这个位置留给冰饮。',
-    lift: '从餐盒取出了这件餐品。'
+    lift: '从餐盒取出了这件餐品。',
+    divider: '这里有隔板，餐品需要绕开。',
+    pair: '薯条和蘸酱要上下或左右挨着。'
   };
+  const finishText = '全部订单已装好！';
 
   let phase = 'title';
   let levelIndex = 0;
   let placed = new Map();
+  let rotations = new Set();
   let selected = null;
   let tapPreview = null;
   let held = null;
@@ -81,7 +100,7 @@
   live.setAttribute('aria-live', 'polite');
   live.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;' +
     'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);';
-  canvas.setAttribute('aria-label', '这单怎么装？拖动餐品入盒，或点选餐品查看预览。键盘可按数字选餐品、用方向键移动、按回车预览或确认。');
+  canvas.setAttribute('aria-label', '这单怎么装？拖动餐品入盒，或点选餐品查看预览。键盘可按数字选餐品，用方向键移动，回车确认。旋转关可按 R。');
   document.body.append(live);
 
   function currentLevel() { return levels[levelIndex]; }
@@ -89,35 +108,54 @@
   function inside(p, r) {
     return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
   }
+  function dimensions(key, rotated) {
+    const { w, h } = items[key];
+    return rotated ? { w: h, h: w } : { w, h };
+  }
+  function draftPosition(key, x, y) {
+    return rotations.has(key) ? { x, y, rotated: true } : { x, y };
+  }
+  function canRotate(key) {
+    return currentLevel().rotate === true && key && items[key].w !== items[key].h;
+  }
   function covers(key, position, x, y) {
-    const item = items[key];
-    return position && x >= position.x && x < position.x + item.w &&
+    if (!position) return false;
+    const item = dimensions(key, position.rotated);
+    return x >= position.x && x < position.x + item.w &&
       y >= position.y && y < position.y + item.h;
   }
   function coversSameCell(a, aPos, b, bPos) {
-    return aPos.x < bPos.x + items[b].w && aPos.x + items[a].w > bPos.x &&
-      aPos.y < bPos.y + items[b].h && aPos.y + items[a].h > bPos.y;
+    const aSize = dimensions(a, aPos.rotated);
+    const bSize = dimensions(b, bPos.rotated);
+    return aPos.x < bPos.x + bSize.w && aPos.x + aSize.w > bPos.x &&
+      aPos.y < bPos.y + bSize.h && aPos.y + aSize.h > bPos.y;
   }
-  function touchesHot(burger, drink) {
+  function touchesCell(key, position, cell) {
     return [
-      [drink.x - 1, drink.y], [drink.x + 1, drink.y],
-      [drink.x, drink.y - 1], [drink.x, drink.y + 1]
-    ].some(([x, y]) => covers('hero', burger, x, y));
+      [cell.x - 1, cell.y], [cell.x + 1, cell.y],
+      [cell.x, cell.y - 1], [cell.x, cell.y + 1]
+    ].some(([x, y]) => covers(key, position, x, y));
   }
   function checkPlacement(key, position) {
     const level = currentLevel();
     const { x, y } = position;
-    const item = items[key];
+    const item = dimensions(key, position.rotated);
     const reserve = level.cup;
     if (x < 0 || y < 0 || x + item.w > level.size || y + item.h > level.size) return cues.noRoom;
     if (reserve && key === 'pickup' && (x !== reserve.x || y !== reserve.y)) return cues.cup;
     if (reserve && key !== 'pickup' && covers(key, position, reserve.x, reserve.y)) return cues.reserved;
+    if (level.dividers?.some(cell => covers(key, position, cell.x, cell.y))) return cues.divider;
     for (const [other, otherPos] of placed) {
       if (other !== key && coversSameCell(key, position, other, otherPos)) return cues.overlap;
     }
     const hot = key === 'hero' ? position : placed.get('hero');
     const cold = key === 'pickup' ? position : placed.get('pickup') || reserve;
-    if (level.heat && hot && cold && touchesHot(hot, cold)) return cues.heat;
+    if (level.heat && hot && cold && touchesCell('hero', hot, cold)) return cues.heat;
+    if (level.pairSauce && (key === 'fries' || key === 'sauce')) {
+      const fries = key === 'fries' ? position : placed.get('fries');
+      const sauce = key === 'sauce' ? position : placed.get('sauce');
+      if (fries && sauce && !touchesCell('fries', fries, sauce)) return cues.pair;
+    }
     return '';
   }
   function occupant(cell) {
@@ -133,7 +171,15 @@
   }
   function isMultiCell(key) { return items[key].w * items[key].h > 1; }
 
+  function clearSelection() {
+    const position = placed.get(selected);
+    if (position?.rotated) rotations.add(selected);
+    else if (position) rotations.delete(selected);
+    selected = null;
+    tapPreview = null;
+  }
   function pick(key) {
+    if (key !== selected) clearSelection();
     selected = key;
     tapPreview = null;
     say('已选' + items[key].label + (isMultiCell(key) ? '。点想覆盖的一格，先看预览。' : '。点餐盒里要放的位置。'));
@@ -147,15 +193,14 @@
       return;
     }
     placed.set(key, position);
-    selected = null;
-    tapPreview = null;
+    clearSelection();
     lastPiece = key;
     placedAt = performance.now();
     if (placed.size === currentLevel().foods.length) {
       phase = levelIndex === levels.length - 1 ? 'won' : 'order-complete';
       completedAt = placedAt;
       autoplayAt = placedAt;
-      say(phase === 'won' ? '三单全部装好！' : '打包成功！', 'success');
+      say(phase === 'won' ? finishText : '打包成功！', 'success');
       sound('finish');
     } else {
       say(items[key].label + '已入盒。', 'success');
@@ -173,6 +218,7 @@
     phase = 'playing';
     levelIndex = index;
     placed = new Map();
+    rotations = new Set();
     held = null;
     selected = null;
     tapPreview = null;
@@ -203,6 +249,7 @@
         key, ...box((width - rowWidth) / 2 + i * (tileWidth + gap), trayY, tileWidth, 76)
       })),
       retry: box(26, trayY + 90, 92, 42),
+      rotate: box(143, trayY + 88, 104, 44),
       takeOut: box(262, trayY + 90, 102, 42),
       start: box(45, height - 135, 300, 60),
       mute: box(315, 16, 55, 44),
@@ -215,7 +262,7 @@
     return { x: Math.floor((point.x - g.inner.x) / g.unit), y: Math.floor((point.y - g.inner.y) / g.unit) };
   }
   function itemCenter(key, position, g) {
-    const { w, h } = items[key];
+    const { w, h } = dimensions(key, position.rotated);
     return {
       x: g.inner.x + (position.x + w / 2) * g.unit,
       y: g.inner.y + (position.y + h / 2) * g.unit
@@ -227,19 +274,18 @@
   function dragTarget(point, g, drag) {
     if (!inside(point, g.board)) return null;
     const size = currentLevel().size;
-    const { w, h } = items[drag.key];
-    return {
-      x: Math.min(size - w, Math.max(0, Math.round((point.x - g.inner.x) / g.unit - drag.grabX))),
-      y: Math.min(size - h, Math.max(0, Math.round((point.y - g.inner.y) / g.unit - drag.grabY)))
-    };
+    const { w, h } = dimensions(drag.key, rotations.has(drag.key));
+    const x = Math.min(size - w, Math.max(0, Math.round((point.x - g.inner.x) / g.unit - drag.grabX)));
+    const y = Math.min(size - h, Math.max(0, Math.round((point.y - g.inner.y) / g.unit - drag.grabY)));
+    return draftPosition(drag.key, x, y);
   }
   function makeTapPreview(key, cell, point, g) {
     const size = currentLevel().size;
-    const { w, h } = items[key];
+    const { w, h } = dimensions(key, rotations.has(key));
     const choices = [];
     for (let y = Math.max(0, cell.y - h + 1); y <= Math.min(cell.y, size - h); y++) {
       for (let x = Math.max(0, cell.x - w + 1); x <= Math.min(cell.x, size - w); x++) {
-        const position = { x, y };
+        const position = draftPosition(key, x, y);
         const center = itemCenter(key, position, g);
         choices.push({
           position,
@@ -250,7 +296,7 @@
     }
     choices.sort((a, b) => a.distance - b.distance);
     const available = choices.filter(choice => !choice.error);
-    tapPreview = { key, choices: available.length ? available : [choices[0]], index: 0 };
+    tapPreview = { key, cell, choices: available.length ? available : [choices[0]], index: 0 };
     announcePreview();
   }
   function announcePreview() {
@@ -278,6 +324,22 @@
     const { key, choices, index } = tapPreview;
     const { position, error } = choices[index];
     if (!error) put(key, position);
+  }
+  function rotateSelected(g) {
+    if (!canRotate(selected)) {
+      say('先选一件长条餐品，再旋转。');
+      return;
+    }
+    const position = placed.get(selected);
+    const cell = tapPreview?.cell || (position && gridCell(itemCenter(selected, position, g), g));
+    if (!rotations.delete(selected)) rotations.add(selected);
+    if (cell) {
+      makeTapPreview(selected, cell, cellCenter(cell, g), g);
+    } else {
+      const { w, h } = dimensions(selected, rotations.has(selected));
+      say(items[selected].label + '已转为' + (w > h ? '横放' : '竖放') + '，点餐盒试摆。');
+    }
+    sound('select');
   }
 
   function round(x, y, w, h, radius, fill, stroke, lineWidth = 1) {
@@ -397,6 +459,19 @@
       path([[13, 57], [50, 15], [88, 53], [83, 58], [16, 63]], '#f4cb82', '#79401f', 2.6);
       path([[21, 55], [50, 23], [78, 52], [24, 57]], '#ffe1a1');
       for (const [x, y] of [[39, 46], [50, 35], [56, 48], [66, 48]]) ellipse(x, y, 1.4, 1.15, '#d69e53');
+    },
+    sauce() {
+      ellipse(50, 78, 30, 6, '#3d27162e');
+      path([[17, 43], [83, 43], [75, 72], [25, 72]], '#f1c291', '#793e2d', 2.5);
+      ellipse(50, 43, 36, 20, '#fff3d1', '#793e2d', 2.7);
+      ellipse(50, 42, 29, 14, '#c94834', '#a73327', 1.4);
+      ctx.beginPath();
+      ctx.moveTo(31, 44);
+      ctx.bezierCurveTo(37, 34, 56, 35, 61, 42);
+      ctx.quadraticCurveTo(61, 49, 47, 49);
+      ctx.strokeStyle = '#ff9870';
+      ctx.lineWidth = 2.3;
+      ctx.stroke();
     }
   };
   const sprites = {};
@@ -411,8 +486,16 @@
     sprites[key] = art;
   }
   ctx = screen;
-  function sprite(key, x, y, size) {
-    ctx.drawImage(sprites[key], x - size / 2, y - size / 2, size, size);
+  function sprite(key, x, y, size, rotated = false) {
+    if (!rotated) {
+      ctx.drawImage(sprites[key], x - size / 2, y - size / 2, size, size);
+      return;
+    }
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(sprites[key], -size / 2, -size / 2, size, size);
+    ctx.restore();
   }
 
   function checker(y) {
@@ -439,7 +522,7 @@
   function drawTitle(g) {
     checker(33);
     label('这单怎么装？', width / 2, 118, 46, colors.red, 900, 'center');
-    label('把餐品装进盒子，三单等你出餐。', width / 2, 161, 16, colors.subtle, 650, 'center');
+    label('把餐品装进盒子，' + levels.length + ' 单等你出餐。', width / 2, 161, 16, colors.subtle, 650, 'center');
     const center = 342 + (height - 720) * .40;
     ctx.save();
     ctx.translate(width / 2, center);
@@ -468,9 +551,10 @@
     round(g.mute.x, g.mute.y + 5, g.mute.w, 34, 10, colors.paper, '#d6b887', 1);
     label(muted ? '静音' : '音效开', g.mute.x + g.mute.w / 2, g.mute.y + 22, 13, colors.ink, 700, 'center');
     label('订单 ' + (levelIndex + 1) + ' / ' + levels.length, 26, 81, 14, colors.ink, 750);
+    const step = 171 / levels.length;
     for (let i = 0; i < levels.length; i++) {
       const fill = i < levelIndex || phase === 'won' ? colors.green : i === levelIndex ? colors.tomato : '#d9bb88';
-      round(200 + i * 57, 77, 50, 7, 3.5, fill);
+      round(200 + i * step, 77, step - 7, 7, 3.5, fill);
     }
     const r = g.receipt;
     round(r.x + 2, r.y + 4, r.w, r.h, 11, '#d5ae77');
@@ -481,7 +565,7 @@
     currentLevel().instruction.forEach((line, i) => label(line, r.x + 15, r.y + 54 + i * 19, 15, colors.subtle, 650));
   }
 
-  function drawFoodOnBoard(key, x, y, w, h, alpha = 1, emphasized = false) {
+  function drawFoodOnBoard(key, x, y, w, h, { alpha = 1, emphasized = false, rotated = false } = {}) {
     const item = items[key];
     ctx.save();
     ctx.globalAlpha = alpha;
@@ -489,7 +573,7 @@
     round(x, y, w, h, 10, item.shade, emphasized ? colors.red : item.edge, emphasized ? 2 : 1);
     round(x + 4, y + 4, w - 8, h - 8, 7, null, '#fff6d56e');
     const icon = Math.min(w * .78, h * .85, key === 'hero' ? 115 : 87);
-    sprite(key, x + w / 2, y + h / 2, icon);
+    sprite(key, x + w / 2, y + h / 2, icon, rotated);
     ctx.restore();
   }
   function drawBoard(g, now, preview) {
@@ -505,6 +589,13 @@
         const isCup = level.cup && x === level.cup.x && y === level.cup.y;
         const px = origin.x + x * unit;
         const py = origin.y + y * unit;
+        if (level.dividers?.some(cell => cell.x === x && cell.y === y)) {
+          round(px + 2, py + 2, unit - 4, unit - 4, 9, '#8b5e45', '#664333');
+          path([[px + 16, py + unit - 16], [px + unit - 16, py + 16]], null, '#b88768', 1.5);
+          path([[px + 13, py + unit - 26], [px + unit - 26, py + 13]], null, '#b88768', 1.5);
+          path([[px + 26, py + unit - 13], [px + unit - 13, py + 26]], null, '#b88768', 1.5);
+          continue;
+        }
         round(px + 2, py + 2, unit - 4, unit - 4, 9, isCup ? colors.paleBlue : '#f5dfb3');
         if (isCup && !placed.has('pickup')) {
           const cx = px + unit / 2;
@@ -520,21 +611,22 @@
       }
     }
     for (const [key, pos] of placed) {
-      const item = items[key];
+      const item = dimensions(key, pos.rotated);
       const dragged = held?.active && held.key === key;
       const bounce = !reduceMotion.matches && key === lastPiece ? Math.max(0, 1 - (now - placedAt) / 180) : 0;
       drawFoodOnBoard(key, origin.x + pos.x * unit + 3, origin.y + pos.y * unit + 3 - Math.sin(bounce * Math.PI) * 3,
-        item.w * unit - 6, item.h * unit - 7, dragged ? .25 : 1, selected === key && !dragged);
+        item.w * unit - 6, item.h * unit - 7,
+        { alpha: dragged ? .25 : 1, emphasized: selected === key && !dragged, rotated: pos.rotated });
     }
     if (!preview && !held?.active && keyboardCell && phase === 'playing') {
       round(origin.x + keyboardCell.x * unit + 4, origin.y + keyboardCell.y * unit + 4, unit - 8, unit - 8, 8, null, colors.red, 2);
     }
     if (!preview) return;
     const { key, position, error } = preview;
-    const { w, h } = items[key];
+    const { w, h } = dimensions(key, position.rotated);
     const x = origin.x + position.x * unit;
     const y = origin.y + position.y * unit;
-    drawFoodOnBoard(key, x + 3, y + 3, w * unit - 6, h * unit - 7, .68);
+    drawFoodOnBoard(key, x + 3, y + 3, w * unit - 6, h * unit - 7, { alpha: .68, rotated: position.rotated });
     for (let row = 0; row < h; row++) {
       for (let column = 0; column < w; column++) {
         round(x + column * unit + 3, y + row * unit + 3, unit - 6, unit - 6, 8,
@@ -557,22 +649,33 @@
   function drawTray(g) {
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
-    label(level.cup ? '冰饮先找杯位' : '可随时调整摆放', width - 27, g.foodLabelY, 13, colors.subtle, 550, 'right');
+    const paired = level.pairSauce && placed.has('fries') && placed.has('sauce');
+    let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
+    if (level.pairSauce) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
+    label(trayHint, width - 27, g.foodLabelY, 13, paired ? colors.green : colors.subtle, 650, 'right');
     for (const card of g.tray) {
       const { x, y, w, h, key } = card;
       const item = items[key];
       const stowed = placed.has(key);
       const highlight = selected === key;
+      const rotated = rotations.has(key);
+      const pendingRotation = highlight && stowed && rotated !== Boolean(placed.get(key).rotated);
       const mid = x + w / 2;
       round(x, y + 3, w, h, 11, '#d7b584');
       round(x, y, w, h, 11, highlight ? '#fff6d5' : stowed ? '#f6ecd0' : colors.paper,
         highlight ? colors.red : '#cdb17f', highlight ? 2.5 : 1);
-      sprite(key, mid, y + 23, 40);
+      sprite(key, mid, y + 23, 40, rotated);
       label(item.label, mid, y + 48, 14, colors.ink, 720, 'center');
-      if (stowed) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
-      else drawShape(item, mid, y + 64);
+      if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
+      else drawShape({ ...dimensions(key, rotated), edge: item.edge }, mid, y + 64);
     }
     label('重置本关', g.retry.x + 2, g.retry.y + 20, 14, colors.red, 700);
+    if (level.rotate) {
+      const r = g.rotate;
+      const ready = canRotate(selected);
+      round(r.x, r.y + 3, r.w, 35, 10, ready ? colors.paper : '#efdfbc', ready ? colors.red : '#ceb184');
+      label('旋转', r.x + r.w / 2, r.y + 21, 15, ready ? colors.red : colors.subtle, 750, 'center');
+    }
     if (selected && placed.has(selected)) {
       label('取出餐品', g.takeOut.x + g.takeOut.w - 2, g.takeOut.y + 20, 14, colors.red, 700, 'right');
     }
@@ -611,8 +714,8 @@
     round(x, y + 6, w, h, 19, '#6a3826');
     round(x, y, w, h, 19, colors.paper, '#b48752', 2);
     round(x + 16, y + 16, w - 32, 6, 3, colors.tomato);
-    label(final ? '三单全部装好！' : '打包成功！', width / 2, y + 66, 30, colors.red, 850, 'center');
-    label(final ? '基础摆放 · 冷热分开 · 固定杯位' : '下一单 · ' + levels[levelIndex + 1].title,
+    label(final ? finishText : '打包成功！', width / 2, y + 66, 30, colors.red, 850, 'center');
+    label(final ? '已完成 ' + levels.length + ' 单' : '下一单 · ' + levels[levelIndex + 1].title,
       width / 2, y + 107, 15, colors.subtle, 650, 'center');
     button(g.advance, final ? '再玩一次' : '接下一单');
   }
@@ -640,7 +743,7 @@
       drawFeedback(g, preview);
       drawTray(g);
       if (held?.active && !preview) {
-        sprite(held.key, held.point.x, held.point.y - 26, 63);
+        sprite(held.key, held.point.x, held.point.y - 26, 63, rotations.has(held.key));
       }
       if (phase !== 'playing') drawComplete(g, now);
     }
@@ -702,6 +805,10 @@
       start(levelIndex);
       return;
     }
+    if (currentLevel().rotate && inside(at, g.rotate)) {
+      rotateSelected(g);
+      return;
+    }
     if (inside(at, g.takeOut) && selected && placed.has(selected)) {
       remove(selected);
       return;
@@ -750,10 +857,13 @@
     const card = g.tray.find(tile => inside(at, tile));
     const key = phase === 'playing' ? card?.key || occupant(cell) : null;
     const position = key && !card ? placed.get(key) : null;
+    const rotated = rotations.has(key);
+    const matchesShape = position && Boolean(position.rotated) === rotated;
+    const size = key ? dimensions(key, rotated) : { w: 0, h: 0 };
     held = {
       id: event.pointerId, point: at, start: at, key, active: false,
-      grabX: position ? (at.x - g.inner.x) / g.unit - position.x : (items[key]?.w || 0) / 2,
-      grabY: position ? (at.y - g.inner.y) / g.unit - position.y : (items[key]?.h || 0) / 2
+      grabX: matchesShape ? (at.x - g.inner.x) / g.unit - position.x : size.w / 2,
+      grabY: matchesShape ? (at.y - g.inner.y) / g.unit - position.y : size.h / 2
     };
     canvas.setPointerCapture(event.pointerId);
   });
@@ -800,6 +910,10 @@
     }
     if (phase !== 'playing') return;
     const level = currentLevel();
+    if (level.rotate && event.key.toLowerCase() === 'r' && !event.repeat) {
+      rotateSelected(geometry());
+      return;
+    }
     const index = Number(event.key) - 1;
     if (Number.isInteger(index) && index >= 0 && index < level.foods.length) {
       keyboardCell ??= { x: 0, y: 0 };
@@ -818,8 +932,7 @@
         makeTapPreview(selected, keyboardCell, cellCenter(keyboardCell, g), g);
       }
     } else if (event.key === 'Escape') {
-      selected = null;
-      tapPreview = null;
+      clearSelection();
       say(cues.ready);
     }
   });
@@ -843,7 +956,7 @@
   window.__gameState = () => ({
     phase: phase === 'order-complete' ? 'playing' : phase,
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
-    preview: getPlacementPreview(geometry()),
+    preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
   });
@@ -864,10 +977,11 @@
     }
     const step = currentLevel().solution.find(([key]) => !placed.has(key));
     if (!step) return;
-    const [key, x, y] = step;
+    const [key, x, y, rotated] = step;
     const g = geometry();
-    const at = itemCenter(key, { x, y }, g);
     pick(key);
+    if (canRotate(key) && Boolean(rotated) !== rotations.has(key)) rotateSelected(g);
+    const at = itemCenter(key, draftPosition(key, x, y), g);
     interactWithCell(gridCell(at, g), at, g);
   };
 
