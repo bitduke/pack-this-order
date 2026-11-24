@@ -20,7 +20,8 @@
     fries:    { label: '薯条',   w: 1, h: 2, shade: '#f9cd70', edge: '#ad7633' },
     rings:    { label: '洋葱圈', w: 2, h: 1, shade: '#f1d9a8', edge: '#a87c4c' },
     sandwich: { label: '三明治', w: 3, h: 1, shade: '#d2e0a3', edge: '#7a9052' },
-    sauce:    { label: '蘸酱',   w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' }
+    sauce:    { label: '蘸酱',   w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' },
+    soup:     { label: '热汤',   w: 1, h: 1, shade: '#eac688', edge: '#aa7540' }
   };
   const levels = [
     {
@@ -134,6 +135,31 @@
       instruction: ['冰饮归杯位，别挨着热汉堡。', '主食二选一并贴酱，蘸酱归酱位。', '薯条贴酱左边，洋葱圈贴酱右边。'],
       hint: '杯位在酱下边，留出上边给主食。',
       solution: [['pickup', 2, 3], ['hero', 2, 0], ['fries', 1, 1], ['rings', 3, 2, true], ['sauce', 2, 2]]
+    },
+    {
+      guest: '许姐', title: '热汤加餐', cup: { x: 2, y: 3 }, sauceSides: ['fries'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 2, y: 2 }],
+      instruction: ['主食二选一，冰饮归杯位。', '热汤和热汉堡都不能挨冰饮。', '薯条要贴蘸酱。'],
+      hint: '热汤只有一格，找个不挨着冰饮的位置。',
+      solution: [['pickup', 2, 3], ['hero', 0, 0], ['fries', 0, 2], ['soup', 1, 2], ['sauce', 1, 3]]
+    },
+    {
+      guest: '阿澈', title: '汤跟主食', cup: { x: 2, y: 3 }, soupWithMain: true,
+      sauceSides: ['fries'], sauceApart: ['soup'], foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+      instruction: ['主食二选一，热汤要贴主食。', '冰饮归杯位，别挨着热食。', '薯条贴蘸酱，热汤和蘸酱分开。'],
+      hint: '给主食留一条边放汤，再把薯条和酱配对。',
+      solution: [['pickup', 2, 3], ['hero', 2, 0], ['fries', 0, 1], ['soup', 3, 2], ['sauce', 0, 3]]
+    },
+    {
+      guest: '敏姐', title: '临时加汤', cup: { x: 1, y: 0 }, sauceSlot: { x: 1, y: 3 },
+      soupWithMain: true, soupAfter: 3, sauceSides: ['fries'], sauceApart: ['soup'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+      instruction: ['先装 3 件，热汤出锅后要贴主食。', '主食二选一，冰饮归杯位、远离热食。', '酱进酱位贴薯条，与热汤分开。'],
+      hint: '先给主食边上留个汤位，热汤出锅后再装。',
+      solution: [['pickup', 1, 0], ['hero', 2, 2], ['fries', 0, 2], ['soup', 3, 1], ['sauce', 1, 3]]
     }
   ].map(order => ({
     size: 4, rotate: true, heat: true, mainChoices: ['hero', 'sandwich'],
@@ -145,6 +171,8 @@
     noRoom: '超出餐盒了，往里挪一格。',
     overlap: '这里已经有餐品了。',
     heat: '热汉堡和冰饮不能挨边。',
+    soupHeat: '热汤和冰饮不能挨边。',
+    soupMain: '热汤要和主食上下或左右挨着。',
     cup: '冰饮只能放进画圆的杯位。',
     reserved: '这个位置留给冰饮。',
     lift: '从餐盒取出了这件餐品。',
@@ -161,6 +189,7 @@
   let levelIndex = 0;
   let customMode = false;
   const servedMains = customOrders.map(() => new Set());
+  let soupArrived = false;
   let placed = new Map();
   let rotations = new Set();
   let selected = null;
@@ -200,6 +229,12 @@
   }
   function packedMain() {
     return currentLevel().mainChoices?.find(key => placed.has(key));
+  }
+  function soupPending() {
+    return Boolean(currentLevel().soupAfter) && !soupArrived;
+  }
+  function soupWaitingMessage() {
+    return '先装好 ' + currentLevel().soupAfter + ' 件餐品，热汤再出锅。';
   }
   function box(x, y, w, h) { return { x, y, w, h }; }
   function inside(p, r) {
@@ -272,6 +307,7 @@
   }
   function checkPlacement(key, position) {
     const level = currentLevel();
+    if (key === 'soup' && soupPending()) return soupWaitingMessage();
     const main = packedMain();
     const isMain = level.mainChoices?.includes(key);
     if (main && key !== main && isMain) return cues.main;
@@ -291,7 +327,16 @@
     }
     const hot = key === 'hero' ? position : placed.get('hero');
     const cold = key === 'pickup' ? position : placed.get('pickup') || reserve;
-    if (level.heat && hot && cold && touchesCell('hero', hot, cold)) return cues.heat;
+    const soup = key === 'soup' ? position : placed.get('soup');
+    if (level.heat && cold) {
+      if (hot && touchesCell('hero', hot, cold)) return cues.heat;
+      if (soup && touchesCell('soup', soup, cold)) return cues.soupHeat;
+    }
+    if (level.soupWithMain && soup && (key === 'soup' || isMain)) {
+      const mainKey = isMain ? key : main;
+      const mainPosition = isMain ? position : placed.get(mainKey);
+      if (mainPosition && !touchesCell(mainKey, mainPosition, soup)) return cues.soupMain;
+    }
     return checkSaucePlacement(level, key, position);
   }
   function occupant(cell) {
@@ -315,6 +360,11 @@
     tapPreview = null;
   }
   function pick(key) {
+    if (key === 'soup' && soupPending()) {
+      clearSelection();
+      say(soupWaitingMessage());
+      return;
+    }
     if (key !== selected) clearSelection();
     selected = key;
     tapPreview = null;
@@ -329,6 +379,8 @@
       return;
     }
     placed.set(key, position);
+    const justArrived = soupPending() && placed.size >= currentLevel().soupAfter;
+    if (justArrived) soupArrived = true;
     clearSelection();
     lastPiece = key;
     placedAt = performance.now();
@@ -345,7 +397,7 @@
       }
       sound('finish');
     } else {
-      say(items[key].label + '已入盒。', 'success');
+      say(justArrived ? '热汤出锅了，可以装盒。' : items[key].label + '已入盒。', 'success');
       sound('place');
     }
   }
@@ -360,6 +412,7 @@
     phase = 'playing';
     levelIndex = index;
     customMode = isCustom;
+    soupArrived = false;
     placed = new Map();
     rotations = new Set();
     held = null;
@@ -635,6 +688,23 @@
       ctx.strokeStyle = '#ff9870';
       ctx.lineWidth = 2.3;
       ctx.stroke();
+    },
+    soup() {
+      ellipse(50, 81, 33, 6, '#3d27162e');
+      path([[15, 50], [85, 50], [72, 76], [28, 76]], '#efe5cc', '#684b32', 2.7);
+      path([[24, 65], [76, 65], [70, 76], [30, 76]], '#93b49b', '#684b32', 1.4);
+      ellipse(50, 49, 36, 17, '#fff5dc', '#684b32', 2.5);
+      ellipse(50, 49, 29, 11, '#e1a34f', '#b7793e', 1.7);
+      ellipse(40, 47, 3, 2, '#758b49');
+      ellipse(59, 52, 3, 2, '#758b49');
+      for (const x of [43, 57]) {
+        ctx.beginPath();
+        ctx.moveTo(x, 35);
+        ctx.bezierCurveTo(x + 9, 25, x - 9, 24, x, 13);
+        ctx.strokeStyle = '#9d744d';
+        ctx.lineWidth = 2.4;
+        ctx.stroke();
+      }
     }
   };
   const sprites = {};
@@ -831,37 +901,50 @@
   function drawTray(g) {
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
+    const waitingForSoup = soupPending();
     const sides = level.sauceSides || [];
     const main = packedMain();
     const pairRules = [...sides, ...(level.sauceApart || [])];
-    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite)) + Number(Boolean(level.mainDips));
+    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite)) +
+      Number(Boolean(level.mainDips)) + Number(Boolean(level.soupWithMain));
     let pairCount = 0;
     if (placed.has('sauce')) {
       pairCount = pairRules.filter(key => placed.has(key)).length;
       if (level.sauceOpposite && sides.every(key => placed.has(key))) pairCount++;
       if (level.mainDips && main) pairCount++;
     }
+    if (level.soupWithMain && main && placed.has('soup')) pairCount++;
     const paired = pairTarget > 0 && pairCount === pairTarget;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
     if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
     if (sides.length > 1) trayHint = '蘸酱搭配 ' + pairCount + '/' + sides.length;
     if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + pairTarget;
-    const trayReady = paired && (!level.mainChoices || main);
+    if (waitingForSoup) trayHint = '先装餐品 ' + placed.size + '/' + level.soupAfter + '，热汤再出锅';
+    const trayReady = !waitingForSoup && paired && (!level.mainChoices || main);
     label(trayHint, width - 27, g.foodLabelY, 13, trayReady ? colors.green : colors.subtle, 650, 'right');
     for (const card of g.tray) {
       const { x, y, w, h, key } = card;
       const item = items[key];
       const stowed = placed.has(key);
+      const waiting = key === 'soup' && waitingForSoup;
       const highlight = selected === key;
       const rotated = rotations.has(key);
       const pendingRotation = highlight && stowed && rotated !== Boolean(placed.get(key).rotated);
       const mid = x + w / 2;
       round(x, y + 3, w, h, 11, '#d7b584');
-      round(x, y, w, h, 11, highlight ? '#fff6d5' : stowed ? '#f6ecd0' : colors.paper,
+      round(x, y, w, h, 11, highlight ? '#fff6d5' : stowed || waiting ? '#f6ecd0' : colors.paper,
         highlight ? colors.red : '#cdb17f', highlight ? 2.5 : 1);
-      sprite(key, mid, y + 23, 40, rotated);
+      if (waiting) {
+        ctx.save();
+        ctx.globalAlpha = .5;
+        sprite(key, mid, y + 23, 40);
+        ctx.restore();
+      } else {
+        sprite(key, mid, y + 23, 40, rotated);
+      }
       label(item.label, mid, y + 48, 14, colors.ink, 720, 'center');
-      if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
+      if (waiting) label('待出锅', mid, y + 64, 12, colors.subtle, 700, 'center');
+      else if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
       else if (main && main !== key && level.mainChoices.includes(key)) label('备选', mid, y + 64, 12, colors.subtle, 700, 'center');
       else drawShape({ ...dimensions(key, rotated), edge: item.edge }, mid, y + 64);
     }
@@ -1070,13 +1153,15 @@
     const g = geometry();
     const cell = gridCell(at, g);
     const card = g.tray.find(tile => inside(at, tile));
-    const key = phase === 'playing' ? card?.key || occupant(cell) : null;
+    const offered = phase === 'playing' ? card?.key || occupant(cell) : null;
+    const waiting = offered === 'soup' && soupPending();
+    const key = waiting ? null : offered;
     const position = key && !card ? placed.get(key) : null;
     const rotated = rotations.has(key);
     const matchesShape = position && Boolean(position.rotated) === rotated;
     const size = key ? dimensions(key, rotated) : { w: 0, h: 0 };
     held = {
-      id: event.pointerId, point: at, start: at, key, active: false,
+      id: event.pointerId, point: at, start: at, key, waiting, active: false,
       grabX: matchesShape ? (at.x - g.inner.x) / g.unit - position.x : size.w / 2,
       grabY: matchesShape ? (at.y - g.inner.y) / g.unit - position.y : size.h / 2
     };
@@ -1096,7 +1181,9 @@
     const g = geometry();
     const drag = held;
     held = null;
-    if (drag.active) {
+    if (drag.waiting) {
+      pick('soup');
+    } else if (drag.active) {
       const drop = dragTarget(at, g, drag);
       if (drop) put(drag.key, drop);
       else if (at.y >= g.foodLabelY && at.y <= g.trayY + 76 && placed.has(drag.key)) remove(drag.key);
@@ -1177,6 +1264,7 @@
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
     mode: customMode ? 'custom' : 'campaign', main: packedMain() || null,
     guest: customMode ? currentLevel().guest : null, servedMains: customMode ? [...servedMains[levelIndex]] : [],
+    soupWaiting: soupPending(),
     preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }

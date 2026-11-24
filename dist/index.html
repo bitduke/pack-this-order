@@ -2,7 +2,7 @@
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; media-src data: blob:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'">
-<title>这单怎么装？</title><meta name="description" content="手机竖屏餐盒解谜，八关闯关和七位客人的自选套餐。">
+<title>这单怎么装？</title><meta name="description" content="手机竖屏餐盒解谜，八关闯关和十位客人的自选套餐。">
 <style>html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}canvas{display:block;width:100vw;height:100vh;height:100dvh;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}</style></head><body><canvas id="game" tabindex="0"></canvas>
 <script>window.addEventListener("keydown",function(e){if(e.key==="Escape")try{parent.postMessage({type:"dsh-wall-escape"},"*")}catch(_){}});window.GAME={"title":"这单怎么装？","rules":{},"slots":{"hero":{"tile":false,"custom":false},"pickup":{"tile":false,"custom":false},"background":{"tile":true,"custom":false},"fries":{"tile":false,"custom":false},"rings":{"tile":false,"custom":false},"sandwich":{"tile":false,"custom":false}},"assets":{"hero":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiI+DQogIDwhLS0gTGl0dGxlIHJvdW5kIGFkdmVudHVyZXIsIGZhY2luZyB0aGUgdmlld2VyLiBGbGF0IGNhcnRvb24sIGRhcmsgb3V0bGluZS4gLS0+DQogIDwhLS0gR3JvdW5kIHNoYWRvdyAtLT4NCiAgPGVsbGlwc2UgY3g9IjEyOCIgY3k9IjIyOCIgcng9IjU4IiByeT0iMTYiIGZpbGw9IiMxZjRkMmUiIG9wYWNpdHk9IjAuMzUiLz4NCiAgPCEtLSBCYWNrcGFjayAtLT4NCiAgPHJlY3QgeD0iNTYiIHk9IjEyMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUyIiByeD0iMTIiIGZpbGw9IiNlOGExM2MiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxwYXRoIGQ9Ik01NiAxMzJoNDAiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogIDwhLS0gTGVncyAtLT4NCiAgPHJlY3QgeD0iODYiIHk9IjE2OCIgd2lkdGg9IjI2IiBoZWlnaHQ9IjQ0IiByeD0iMTIiIGZpbGw9IiMyZjZiNGYiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9IjEzNCIgeT0iMTY4IiB3aWR0aD0iMjYiIGhlaWdodD0iNDQiIHJ4PSIxMiIgZmlsbD0iIzJmNmI0ZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBCb290cyAtLT4NCiAgPHJlY3QgeD0iNzgiIHk9IjE5OCIgd2lkdGg9IjQyIiBoZWlnaHQ9IjIyIiByeD0iMTAiIGZpbGw9IiM3YTRhMmIiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9IjEyOCIgeT0iMTk4IiB3aWR0aD0iNDIiIGhlaWdodD0iMjIiIHJ4PSIxMCIgZmlsbD0iIzdhNGEyYiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBCb2R5IC0tPg0KICA8cGF0aCBkPSJNNzYgOTZjMC0yNiAyMC00NiA0Ni00NmgxMmMyNiAwIDQ2IDIwIDQ2IDQ2djYyYzAgMjItMTYgNDAtMzggNDJoLTI4Yy0yMi0yLTM4LTIwLTM4LTQyeiIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBCZWx0IC0tPg0KICA8cmVjdCB4PSI3NiIgeT0iMTUwIiB3aWR0aD0iMTA0IiBoZWlnaHQ9IjE0IiBmaWxsPSIjMmIxYjEyIi8+DQogIDxyZWN0IHg9IjExOCIgeT0iMTQ4IiB3aWR0aD0iMjAiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSIjZjJjMTRlIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICA8IS0tIFNjYXJmIGtub3QgLS0+DQogIDxwYXRoIGQ9Ik05NiA5OGM4IDggMjAgMTIgMzIgMTJzMjQtNCAzMi0xMmwtMTAgMThjLTYgNi0xNiA4LTIyIDhzLTE2LTItMjItOHoiIGZpbGw9IiMzZjhmNWEiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI3Ii8+DQogIDwhLS0gQXJtcyAtLT4NCiAgPHJlY3QgeD0iNDQiIHk9IjEwOCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjU0IiByeD0iMTUiIGZpbGw9IiNlODVkM2QiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9IjE4MiIgeT0iMTA4IiB3aWR0aD0iMzAiIGhlaWdodD0iNTQiIHJ4PSIxNSIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPGNpcmNsZSBjeD0iNTkiIGN5PSIxNzAiIHI9IjE0IiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIvPg0KICA8Y2lyY2xlIGN4PSIxOTciIGN5PSIxNzAiIHI9IjE0IiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIvPg0KICA8IS0tIEhlYWQgLS0+DQogIDxjaXJjbGUgY3g9IjEyOCIgY3k9IjgyIiByPSI0MiIgZmlsbD0iI2Y3ZDlhOCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBFeWVzIC0tPg0KICA8ZWxsaXBzZSBjeD0iMTEyIiBjeT0iNzgiIHJ4PSI2IiByeT0iOCIgZmlsbD0iIzJiMWIxMiIvPg0KICA8ZWxsaXBzZSBjeD0iMTQ2IiBjeT0iNzgiIHJ4PSI2IiByeT0iOCIgZmlsbD0iIzJiMWIxMiIvPg0KICA8Y2lyY2xlIGN4PSIxMTQiIGN5PSI3NSIgcj0iMi40IiBmaWxsPSIjZmZmZmZmIi8+DQogIDxjaXJjbGUgY3g9IjE0OCIgY3k9Ijc1IiByPSIyLjQiIGZpbGw9IiNmZmZmZmYiLz4NCiAgPCEtLSBDaGVla3MgLS0+DQogIDxjaXJjbGUgY3g9Ijk4IiBjeT0iOTIiIHI9IjciIGZpbGw9IiNmMDhhNmUiIG9wYWNpdHk9IjAuOCIvPg0KICA8Y2lyY2xlIGN4PSIxNTgiIGN5PSI5MiIgcj0iNyIgZmlsbD0iI2YwOGE2ZSIgb3BhY2l0eT0iMC44Ii8+DQogIDwhLS0gTW91dGggLS0+DQogIDxwYXRoIGQ9Ik0xMTggOTZjNCA1IDE2IDUgMjAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8IS0tIEhhdCAtLT4NCiAgPHBhdGggZD0iTTg0IDY2YzAtMjAgMTYtMzYgMzYtMzZoMTZjMjAgMCAzNiAxNiAzNiAzNnYxNEg4NHoiIGZpbGw9IiMzZjhmNWEiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9Ijc4IiB5PSI3MiIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxNiIgcng9IjgiIGZpbGw9IiMyZjZiNGYiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQo8L3N2Zz4NCg==","pickup":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiI+DQogIDwhLS0gR2xvd2luZyBwYXBlciBsYW50ZXJuLiBGbGF0IGNhcnRvb24sIGRhcmsgb3V0bGluZS4gLS0+DQogIDwhLS0gU29mdCBnbG93IC0tPg0KICA8Y2lyY2xlIGN4PSIxMjgiIGN5PSIxNDIiIHI9Ijg0IiBmaWxsPSIjZmZkNjZiIiBvcGFjaXR5PSIwLjI4Ii8+DQogIDxjaXJjbGUgY3g9IjEyOCIgY3k9IjE0MiIgcj0iNjAiIGZpbGw9IiNmZmM5NGQiIG9wYWNpdHk9IjAuNCIvPg0KICA8IS0tIEhhbmdpbmcgc3RyaW5nIC0tPg0KICA8bGluZSB4MT0iMTI4IiB5MT0iMTYiIHgyPSIxMjgiIHkyPSI0NiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8IS0tIFRvcCBjYXAgLS0+DQogIDxyZWN0IHg9IjkyIiB5PSI0NCIgd2lkdGg9IjcyIiBoZWlnaHQ9IjE4IiByeD0iOCIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBSaWJzIC0tPg0KICA8cGF0aCBkPSJNMTEyIDYwYzAgNDIgMTYgNjggMTYgOTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Q5OGEyYiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogIDxwYXRoIGQ9Ik0xNDQgNjBjMCA0Mi0xNiA2OC0xNiA5NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk4YTJiIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgPHBhdGggZD0iTTEyOCA2MHY5NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk4YTJiIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgPCEtLSBMYW50ZXJuIGJvZHkgLS0+DQogIDxwYXRoIGQ9Ik04OCA2MmMwIDU0IDE4IDg0IDQwIDg0czQwLTMwIDQwLTg0YzAtNi04LTEyLTIwLTEyaC00MGMtMTIgMC0yMCA2LTIwIDEyeiIgZmlsbD0iI2ZmYzk0ZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPHBhdGggZD0iTTg4IDY2aDgwIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+DQogIDxwYXRoIGQ9Ik05MiAxNDZjMCA4IDggMTIgMTQgMTJoNDRjNiAwIDE0LTQgMTQtMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4NCiAgPCEtLSBCb3R0b20gY2FwIC0tPg0KICA8cmVjdCB4PSI5NCIgeT0iMTUwIiB3aWR0aD0iNjgiIGhlaWdodD0iMTYiIHJ4PSI4IiBmaWxsPSIjZTg1ZDNkIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIvPg0KICA8IS0tIFRhc3NlbCAtLT4NCiAgPGxpbmUgeDE9IjEyOCIgeTE9IjE2NiIgeDI9IjEyOCIgeTI9IjE5MiIgc3Ryb2tlPSIjZTg1ZDNkIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8cGF0aCBkPSJNMTIwIDE5MmM0IDEyIDEyIDEyIDE2IDB6IiBmaWxsPSIjZTg1ZDNkIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPg0KICA8IS0tIElubmVyIGdsb3cgLS0+DQogIDxlbGxpcHNlIGN4PSIxMjgiIGN5PSIxMTYiIHJ4PSIyMiIgcnk9IjMwIiBmaWxsPSIjZmZmM2M0IiBvcGFjaXR5PSIwLjkiLz4NCjwvc3ZnPg0K","background":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+DQogIDwhLS0gVG9wLWRvd24gZ3Jhc3MgbWVhZG93IHRpbGUuIE9wYXF1ZSwgc2VhbWxlc3M7IGRldGFpbHMga2VwdCBjbGVhciBvZiBlZGdlcy4gLS0+DQogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSIjN2ZiZjVhIi8+DQogIDwhLS0gU29mdCBtb3R0bGluZyAtLT4NCiAgPGNpcmNsZSBjeD0iODAiIGN5PSI5MCIgcj0iNzAiIGZpbGw9IiM3NGIxNTEiIG9wYWNpdHk9IjAuNyIvPg0KICA8Y2lyY2xlIGN4PSI0MzAiIGN5PSIxMjAiIHI9IjgwIiBmaWxsPSIjOGFjODY2IiBvcGFjaXR5PSIwLjYiLz4NCiAgPGNpcmNsZSBjeD0iMTIwIiBjeT0iNDIwIiByPSI5MCIgZmlsbD0iIzhhYzg2NiIgb3BhY2l0eT0iMC41Ii8+DQogIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjQwMCIgcj0iNzAiIGZpbGw9IiM3NGIxNTEiIG9wYWNpdHk9IjAuNyIvPg0KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjEyMCIgZmlsbD0iIzc2YjM1MiIgb3BhY2l0eT0iMC4zNSIvPg0KICA8IS0tIEJsYWRlcyBvZiBncmFzcyAtLT4NCiAgPGcgc3Ryb2tlPSIjNWU5YTQxIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC44NSI+DQogICAgPHBhdGggZD0iTTkwIDE2MGM4LTE0IDYtMjYgMC0zNCIvPg0KICAgIDxwYXRoIGQ9Ik0xNTAgMzQwYzEwLTE2IDgtMzAgMC00MCIvPg0KICAgIDxwYXRoIGQ9Ik0zNjAgMTkwYzgtMTQgNi0yNiAwLTM0Ii8+DQogICAgPHBhdGggZD0iTTMwMCA0MjBjMTAtMTYgOC0zMCAwLTQwIi8+DQogICAgPHBhdGggZD0iTTQyMCAzMDBjOC0xNCA2LTI2IDAtMzQiLz4NCiAgICA8cGF0aCBkPSJNMTkwIDI0MGM4LTE0IDYtMjYgMC0zNCIvPg0KICAgIDxwYXRoIGQ9Ik0zMzAgMzMwYzgtMTQgNi0yNiAwLTM0Ii8+DQogIDwvZz4NCiAgPCEtLSBQZWJibGVzIC0tPg0KICA8ZWxsaXBzZSBjeD0iMjIwIiBjeT0iMTQwIiByeD0iMjAiIHJ5PSIxNCIgZmlsbD0iI2I5YzRiMCIgc3Ryb2tlPSIjOGY5YTg4IiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgPGVsbGlwc2UgY3g9IjIzMiIgY3k9IjE0NiIgcng9IjEwIiByeT0iNyIgZmlsbD0iI2NmZDhjNyIgb3BhY2l0eT0iMC45Ii8+DQogIDxlbGxpcHNlIGN4PSIzNTAiIGN5PSIzNjAiIHJ4PSIxNiIgcnk9IjExIiBmaWxsPSIjYjljNGIwIiBzdHJva2U9IiM4ZjlhODgiIHN0cm9rZS13aWR0aD0iNiIvPg0KICA8ZWxsaXBzZSBjeD0iMzAwIiBjeT0iMTgwIiByeD0iMTIiIHJ5PSI4IiBmaWxsPSIjYzRjZGJjIiBzdHJva2U9IiM4ZjlhODgiIHN0cm9rZS13aWR0aD0iNSIvPg0KICA8IS0tIEZsb3dlciAxIC0tPg0KICA8Zz4NCiAgICA8bGluZSB4MT0iMTUwIiB5MT0iMzAwIiB4Mj0iMTUwIiB5Mj0iMzUwIiBzdHJva2U9IiMzYzdhMmYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+DQogICAgPGNpcmNsZSBjeD0iMTM0IiBjeT0iMjkyIiByPSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNjYiIGN5PSIyOTIiIHI9IjEyIiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICAgIDxjaXJjbGUgY3g9IjE1MCIgY3k9IjI3NiIgcj0iMTIiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogICAgPGNpcmNsZSBjeD0iMTUwIiBjeT0iMzA4IiByPSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNTAiIGN5PSIyOTIiIHI9IjEwIiBmaWxsPSIjZjJjMTRlIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNSIvPg0KICA8L2c+DQogIDwhLS0gRmxvd2VyIDIgLS0+DQogIDxnPg0KICAgIDxsaW5lIHgxPSIzOTAiIHkxPSIyNTAiIHgyPSIzOTAiIHkyPSIyOTQiIHN0cm9rZT0iIzNjN2EyZiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNzYiIGN5PSIyNDQiIHI9IjEwIiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICAgIDxjaXJjbGUgY3g9IjQwNCIgY3k9IjI0NCIgcj0iMTAiIGZpbGw9IiNmN2Q5YTgiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogICAgPGNpcmNsZSBjeD0iMzkwIiBjeT0iMjMwIiByPSIxMCIgZmlsbD0iI2Y3ZDlhOCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIzOTAiIGN5PSIyNTgiIHI9IjEwIiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICAgIDxjaXJjbGUgY3g9IjM5MCIgY3k9IjI0NCIgcj0iOSIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjUiLz4NCiAgPC9nPg0KICA8IS0tIEZsb3dlciAzIChzbWFsbCBidWQpIC0tPg0KICA8Zz4NCiAgICA8bGluZSB4MT0iMjYwIiB5MT0iODYiIHgyPSIyNjAiIHkyPSIxMTIiIHN0cm9rZT0iIzNjN2EyZiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4NCiAgICA8Y2lyY2xlIGN4PSIyNjAiIGN5PSI4MCIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjUiLz4NCiAgICA8Y2lyY2xlIGN4PSIyNjAiIGN5PSI4MCIgcj0iNC41IiBmaWxsPSIjZjJjMTRlIi8+DQogIDwvZz4NCjwvc3ZnPg0K","fries":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PCEtLSBQbGFjZWhvbGRlciBmb3IgIuiWr+adoSI7IGRyYXcgb3ZlciB0aGlzIGZpbGUgb3IgZ2VuZXJhdGUgYXJ0IGZvciB0aGUgc2xvdC4gLS0+PGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMDgiIGZpbGw9ImhzbCg2NSA2MCUgNjIlKSIgc3Ryb2tlPSJoc2woNjUgNDUlIDI4JSkiIHN0cm9rZS13aWR0aD0iOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZvbnQtc2l6ZT0iOTIiIGZpbGw9ImhzbCg2NSA0NSUgMjIlKSI+6JavPC90ZXh0Pjwvc3ZnPgo=","rings":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PCEtLSBQbGFjZWhvbGRlciBmb3IgIua0i+iRseWciCI7IGRyYXcgb3ZlciB0aGlzIGZpbGUgb3IgZ2VuZXJhdGUgYXJ0IGZvciB0aGUgc2xvdC4gLS0+PGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMDgiIGZpbGw9ImhzbCgxMDcgNjAlIDYyJSkiIHN0cm9rZT0iaHNsKDEwNyA0NSUgMjglKSIgc3Ryb2tlLXdpZHRoPSI5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSI5MiIgZmlsbD0iaHNsKDEwNyA0NSUgMjIlKSI+5rSLPC90ZXh0Pjwvc3ZnPgo=","sandwich":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PCEtLSBQbGFjZWhvbGRlciBmb3IgIuS4ieaYjuayuyI7IGRyYXcgb3ZlciB0aGlzIGZpbGUgb3IgZ2VuZXJhdGUgYXJ0IGZvciB0aGUgc2xvdC4gLS0+PGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMDgiIGZpbGw9ImhzbCgyOTUgNjAlIDYyJSkiIHN0cm9rZT0iaHNsKDI5NSA0NSUgMjglKSIgc3Ryb2tlLXdpZHRoPSI5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSI5MiIgZmlsbD0iaHNsKDI5NSA0NSUgMjIlKSI+5LiJPC90ZXh0Pjwvc3ZnPgo="}};</script>
 <script>(() => {
@@ -27,7 +27,8 @@
     fries:    { label: '薯条',   w: 1, h: 2, shade: '#f9cd70', edge: '#ad7633' },
     rings:    { label: '洋葱圈', w: 2, h: 1, shade: '#f1d9a8', edge: '#a87c4c' },
     sandwich: { label: '三明治', w: 3, h: 1, shade: '#d2e0a3', edge: '#7a9052' },
-    sauce:    { label: '蘸酱',   w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' }
+    sauce:    { label: '蘸酱',   w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' },
+    soup:     { label: '热汤',   w: 1, h: 1, shade: '#eac688', edge: '#aa7540' }
   };
   const levels = [
     {
@@ -141,6 +142,31 @@
       instruction: ['冰饮归杯位，别挨着热汉堡。', '主食二选一并贴酱，蘸酱归酱位。', '薯条贴酱左边，洋葱圈贴酱右边。'],
       hint: '杯位在酱下边，留出上边给主食。',
       solution: [['pickup', 2, 3], ['hero', 2, 0], ['fries', 1, 1], ['rings', 3, 2, true], ['sauce', 2, 2]]
+    },
+    {
+      guest: '许姐', title: '热汤加餐', cup: { x: 2, y: 3 }, sauceSides: ['fries'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 2, y: 2 }],
+      instruction: ['主食二选一，冰饮归杯位。', '热汤和热汉堡都不能挨冰饮。', '薯条要贴蘸酱。'],
+      hint: '热汤只有一格，找个不挨着冰饮的位置。',
+      solution: [['pickup', 2, 3], ['hero', 0, 0], ['fries', 0, 2], ['soup', 1, 2], ['sauce', 1, 3]]
+    },
+    {
+      guest: '阿澈', title: '汤跟主食', cup: { x: 2, y: 3 }, soupWithMain: true,
+      sauceSides: ['fries'], sauceApart: ['soup'], foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+      instruction: ['主食二选一，热汤要贴主食。', '冰饮归杯位，别挨着热食。', '薯条贴蘸酱，热汤和蘸酱分开。'],
+      hint: '给主食留一条边放汤，再把薯条和酱配对。',
+      solution: [['pickup', 2, 3], ['hero', 2, 0], ['fries', 0, 1], ['soup', 3, 2], ['sauce', 0, 3]]
+    },
+    {
+      guest: '敏姐', title: '临时加汤', cup: { x: 1, y: 0 }, sauceSlot: { x: 1, y: 3 },
+      soupWithMain: true, soupAfter: 3, sauceSides: ['fries'], sauceApart: ['soup'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+      instruction: ['先装 3 件，热汤出锅后要贴主食。', '主食二选一，冰饮归杯位、远离热食。', '酱进酱位贴薯条，与热汤分开。'],
+      hint: '先给主食边上留个汤位，热汤出锅后再装。',
+      solution: [['pickup', 1, 0], ['hero', 2, 2], ['fries', 0, 2], ['soup', 3, 1], ['sauce', 1, 3]]
     }
   ].map(order => ({
     size: 4, rotate: true, heat: true, mainChoices: ['hero', 'sandwich'],
@@ -152,6 +178,8 @@
     noRoom: '超出餐盒了，往里挪一格。',
     overlap: '这里已经有餐品了。',
     heat: '热汉堡和冰饮不能挨边。',
+    soupHeat: '热汤和冰饮不能挨边。',
+    soupMain: '热汤要和主食上下或左右挨着。',
     cup: '冰饮只能放进画圆的杯位。',
     reserved: '这个位置留给冰饮。',
     lift: '从餐盒取出了这件餐品。',
@@ -168,6 +196,7 @@
   let levelIndex = 0;
   let customMode = false;
   const servedMains = customOrders.map(() => new Set());
+  let soupArrived = false;
   let placed = new Map();
   let rotations = new Set();
   let selected = null;
@@ -207,6 +236,12 @@
   }
   function packedMain() {
     return currentLevel().mainChoices?.find(key => placed.has(key));
+  }
+  function soupPending() {
+    return Boolean(currentLevel().soupAfter) && !soupArrived;
+  }
+  function soupWaitingMessage() {
+    return '先装好 ' + currentLevel().soupAfter + ' 件餐品，热汤再出锅。';
   }
   function box(x, y, w, h) { return { x, y, w, h }; }
   function inside(p, r) {
@@ -279,6 +314,7 @@
   }
   function checkPlacement(key, position) {
     const level = currentLevel();
+    if (key === 'soup' && soupPending()) return soupWaitingMessage();
     const main = packedMain();
     const isMain = level.mainChoices?.includes(key);
     if (main && key !== main && isMain) return cues.main;
@@ -298,7 +334,16 @@
     }
     const hot = key === 'hero' ? position : placed.get('hero');
     const cold = key === 'pickup' ? position : placed.get('pickup') || reserve;
-    if (level.heat && hot && cold && touchesCell('hero', hot, cold)) return cues.heat;
+    const soup = key === 'soup' ? position : placed.get('soup');
+    if (level.heat && cold) {
+      if (hot && touchesCell('hero', hot, cold)) return cues.heat;
+      if (soup && touchesCell('soup', soup, cold)) return cues.soupHeat;
+    }
+    if (level.soupWithMain && soup && (key === 'soup' || isMain)) {
+      const mainKey = isMain ? key : main;
+      const mainPosition = isMain ? position : placed.get(mainKey);
+      if (mainPosition && !touchesCell(mainKey, mainPosition, soup)) return cues.soupMain;
+    }
     return checkSaucePlacement(level, key, position);
   }
   function occupant(cell) {
@@ -322,6 +367,11 @@
     tapPreview = null;
   }
   function pick(key) {
+    if (key === 'soup' && soupPending()) {
+      clearSelection();
+      say(soupWaitingMessage());
+      return;
+    }
     if (key !== selected) clearSelection();
     selected = key;
     tapPreview = null;
@@ -336,6 +386,8 @@
       return;
     }
     placed.set(key, position);
+    const justArrived = soupPending() && placed.size >= currentLevel().soupAfter;
+    if (justArrived) soupArrived = true;
     clearSelection();
     lastPiece = key;
     placedAt = performance.now();
@@ -352,7 +404,7 @@
       }
       sound('finish');
     } else {
-      say(items[key].label + '已入盒。', 'success');
+      say(justArrived ? '热汤出锅了，可以装盒。' : items[key].label + '已入盒。', 'success');
       sound('place');
     }
   }
@@ -367,6 +419,7 @@
     phase = 'playing';
     levelIndex = index;
     customMode = isCustom;
+    soupArrived = false;
     placed = new Map();
     rotations = new Set();
     held = null;
@@ -642,6 +695,23 @@
       ctx.strokeStyle = '#ff9870';
       ctx.lineWidth = 2.3;
       ctx.stroke();
+    },
+    soup() {
+      ellipse(50, 81, 33, 6, '#3d27162e');
+      path([[15, 50], [85, 50], [72, 76], [28, 76]], '#efe5cc', '#684b32', 2.7);
+      path([[24, 65], [76, 65], [70, 76], [30, 76]], '#93b49b', '#684b32', 1.4);
+      ellipse(50, 49, 36, 17, '#fff5dc', '#684b32', 2.5);
+      ellipse(50, 49, 29, 11, '#e1a34f', '#b7793e', 1.7);
+      ellipse(40, 47, 3, 2, '#758b49');
+      ellipse(59, 52, 3, 2, '#758b49');
+      for (const x of [43, 57]) {
+        ctx.beginPath();
+        ctx.moveTo(x, 35);
+        ctx.bezierCurveTo(x + 9, 25, x - 9, 24, x, 13);
+        ctx.strokeStyle = '#9d744d';
+        ctx.lineWidth = 2.4;
+        ctx.stroke();
+      }
     }
   };
   const sprites = {};
@@ -838,37 +908,50 @@
   function drawTray(g) {
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
+    const waitingForSoup = soupPending();
     const sides = level.sauceSides || [];
     const main = packedMain();
     const pairRules = [...sides, ...(level.sauceApart || [])];
-    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite)) + Number(Boolean(level.mainDips));
+    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite)) +
+      Number(Boolean(level.mainDips)) + Number(Boolean(level.soupWithMain));
     let pairCount = 0;
     if (placed.has('sauce')) {
       pairCount = pairRules.filter(key => placed.has(key)).length;
       if (level.sauceOpposite && sides.every(key => placed.has(key))) pairCount++;
       if (level.mainDips && main) pairCount++;
     }
+    if (level.soupWithMain && main && placed.has('soup')) pairCount++;
     const paired = pairTarget > 0 && pairCount === pairTarget;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
     if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
     if (sides.length > 1) trayHint = '蘸酱搭配 ' + pairCount + '/' + sides.length;
     if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + pairTarget;
-    const trayReady = paired && (!level.mainChoices || main);
+    if (waitingForSoup) trayHint = '先装餐品 ' + placed.size + '/' + level.soupAfter + '，热汤再出锅';
+    const trayReady = !waitingForSoup && paired && (!level.mainChoices || main);
     label(trayHint, width - 27, g.foodLabelY, 13, trayReady ? colors.green : colors.subtle, 650, 'right');
     for (const card of g.tray) {
       const { x, y, w, h, key } = card;
       const item = items[key];
       const stowed = placed.has(key);
+      const waiting = key === 'soup' && waitingForSoup;
       const highlight = selected === key;
       const rotated = rotations.has(key);
       const pendingRotation = highlight && stowed && rotated !== Boolean(placed.get(key).rotated);
       const mid = x + w / 2;
       round(x, y + 3, w, h, 11, '#d7b584');
-      round(x, y, w, h, 11, highlight ? '#fff6d5' : stowed ? '#f6ecd0' : colors.paper,
+      round(x, y, w, h, 11, highlight ? '#fff6d5' : stowed || waiting ? '#f6ecd0' : colors.paper,
         highlight ? colors.red : '#cdb17f', highlight ? 2.5 : 1);
-      sprite(key, mid, y + 23, 40, rotated);
+      if (waiting) {
+        ctx.save();
+        ctx.globalAlpha = .5;
+        sprite(key, mid, y + 23, 40);
+        ctx.restore();
+      } else {
+        sprite(key, mid, y + 23, 40, rotated);
+      }
       label(item.label, mid, y + 48, 14, colors.ink, 720, 'center');
-      if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
+      if (waiting) label('待出锅', mid, y + 64, 12, colors.subtle, 700, 'center');
+      else if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
       else if (main && main !== key && level.mainChoices.includes(key)) label('备选', mid, y + 64, 12, colors.subtle, 700, 'center');
       else drawShape({ ...dimensions(key, rotated), edge: item.edge }, mid, y + 64);
     }
@@ -1077,13 +1160,15 @@
     const g = geometry();
     const cell = gridCell(at, g);
     const card = g.tray.find(tile => inside(at, tile));
-    const key = phase === 'playing' ? card?.key || occupant(cell) : null;
+    const offered = phase === 'playing' ? card?.key || occupant(cell) : null;
+    const waiting = offered === 'soup' && soupPending();
+    const key = waiting ? null : offered;
     const position = key && !card ? placed.get(key) : null;
     const rotated = rotations.has(key);
     const matchesShape = position && Boolean(position.rotated) === rotated;
     const size = key ? dimensions(key, rotated) : { w: 0, h: 0 };
     held = {
-      id: event.pointerId, point: at, start: at, key, active: false,
+      id: event.pointerId, point: at, start: at, key, waiting, active: false,
       grabX: matchesShape ? (at.x - g.inner.x) / g.unit - position.x : size.w / 2,
       grabY: matchesShape ? (at.y - g.inner.y) / g.unit - position.y : size.h / 2
     };
@@ -1103,7 +1188,9 @@
     const g = geometry();
     const drag = held;
     held = null;
-    if (drag.active) {
+    if (drag.waiting) {
+      pick('soup');
+    } else if (drag.active) {
       const drop = dragTarget(at, g, drag);
       if (drop) put(drag.key, drop);
       else if (at.y >= g.foodLabelY && at.y <= g.trayY + 76 && placed.has(drag.key)) remove(drag.key);
@@ -1184,6 +1271,7 @@
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
     mode: customMode ? 'custom' : 'campaign', main: packedMain() || null,
     guest: customMode ? currentLevel().guest : null, servedMains: customMode ? [...servedMains[levelIndex]] : [],
+    soupWaiting: soupPending(),
     preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
