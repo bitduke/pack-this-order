@@ -188,6 +188,34 @@
       instruction: ['先装 3 件上汤，汤入盒才上酱。', '主食二选一，薯条和热汤都贴主食。', '冰饮归杯位，别挨热食。', '酱进酱位，薯条贴酱左边，汤酱分开。'],
       hint: '先看好酱位左边的格子，再给主食和热汤腾位置。',
       solution: [['pickup', 1, 0], ['hero', 2, 2], ['fries', 1, 1], ['soup', 1, 3], ['sauce', 2, 1]]
+    },
+    {
+      guest: '阿梅', title: '圈圈加点', cup: { x: 3, y: 0 }, lateFoods: { rings: { after: 2 } },
+      foodPairs: [['rings', 'fries']], sauceSides: ['fries'],
+      dividers: [{ x: 2, y: 0 }, { x: 2, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+      instruction: ['先装 2 件，洋葱圈再到。', '洋葱圈贴薯条，薯条也要贴蘸酱。', '主食二选一，冰饮进杯位并避开汉堡。'],
+      hint: '给薯条留两处相邻位置，一处放酱，一处放洋葱圈。',
+      solution: [['pickup', 3, 0], ['hero', 0, 0], ['fries', 3, 2], ['rings', 1, 3], ['sauce', 3, 1]]
+    },
+    {
+      guest: '阿泽', title: '冰饮后到', cup: { x: 3, y: 1 },
+      lateFoods: { pickup: { after: 3, requires: 'soup' } },
+      mainSides: ['soup'], sauceSides: ['fries'], sauceApart: ['soup'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce', 'soup'],
+      dividers: [{ x: 2, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 0, y: 3 }],
+      instruction: ['装满 3 件且热汤入盒，冰饮才到。', '主食二选一，热汤贴主食，薯条贴酱。', '杯位留给冰饮，冷热和汤酱都分开。'],
+      hint: '冰饮还没到，但它的杯位旁边已经不能摆热食。',
+      solution: [['hero', 0, 0], ['fries', 3, 2], ['soup', 2, 0], ['pickup', 3, 1], ['sauce', 2, 3]]
+    },
+    {
+      guest: '倩姐', title: '两边加点', cup: { x: 0, y: 2 }, sauceSlot: { x: 2, y: 1 },
+      lateFoods: { fries: { after: 3 }, rings: { after: 4, requires: 'fries' } },
+      sauceSides: ['fries', 'rings'], mainSides: ['rings'],
+      sauceEdges: { fries: { x: -1, y: 0, label: '左边' }, rings: { x: 1, y: 0, label: '右边' } },
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }],
+      instruction: ['装 3 件上薯条，薯条入盒上洋葱圈。', '酱归酱位，薯条贴左边，洋葱圈贴右边。', '主食二选一，洋葱圈也要贴主食。', '冰饮进杯位，别挨着热汉堡。'],
+      hint: '先留好酱位两侧，洋葱圈到后还要够得着主食。',
+      solution: [['pickup', 0, 2], ['hero', 2, 2], ['sauce', 2, 1], ['fries', 1, 1], ['rings', 3, 0, true]]
     }
   ].map(order => ({
     size: 4, rotate: true, heat: true, mainChoices: ['hero', 'sandwich'],
@@ -393,6 +421,14 @@
             return items[sideKey].label + '要和主食上下或左右挨着。';
           }
         }
+      }
+    }
+    for (const [firstKey, secondKey] of level.foodPairs || []) {
+      if (key !== firstKey && key !== secondKey) continue;
+      const first = key === firstKey ? position : placed.get(firstKey);
+      const second = key === secondKey ? position : placed.get(secondKey);
+      if (first && second && !foodsShareEdge(firstKey, first, secondKey, second)) {
+        return items[firstKey].label + '要和' + items[secondKey].label + '上下或左右挨着。';
       }
     }
     return checkSaucePlacement(level, key, position);
@@ -967,9 +1003,10 @@
     const sides = level.sauceSides || [];
     const main = packedMain();
     const mainSides = level.mainSides || [];
+    const foodPairs = level.foodPairs || [];
     const pairRules = [...sides, ...(level.sauceApart || [])];
     const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite)) +
-      Number(Boolean(level.mainDips)) + mainSides.length;
+      Number(Boolean(level.mainDips)) + mainSides.length + foodPairs.length;
     let pairCount = 0;
     if (placed.has('sauce')) {
       pairCount = pairRules.filter(key => placed.has(key)).length;
@@ -977,6 +1014,7 @@
       if (level.mainDips && main) pairCount++;
     }
     if (main) pairCount += mainSides.filter(key => placed.has(key)).length;
+    pairCount += foodPairs.filter(([first, second]) => placed.has(first) && placed.has(second)).length;
     const paired = pairTarget > 0 && pairCount === pairTarget;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
     if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
@@ -1333,6 +1371,7 @@
     mode: customMode ? 'custom' : 'campaign', main: packedMain() || null,
     guest: customMode ? currentLevel().guest : null, servedMains: customMode ? [...servedMains[levelIndex]] : [],
     soupWaiting: isWaitingForFood('soup'), sauceWaiting: isWaitingForFood('sauce'),
+    waitingFoods: Object.keys(currentLevel().lateFoods || {}).filter(isWaitingForFood),
     preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
