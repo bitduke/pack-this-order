@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "assets": {
+    "hero": {
+      "slot": "hero",
+      "file": "assets/hero.svg",
+      "source": "template",
+      "appliedAt": "2026-11-24T04:18:50.070Z",
+      "license": "MIT (bundled template art, original to dsh-game-studio)",
+      "sha256": "34a129331b53d201a6b702dde212ec43ae4acd93218a7e7de40af3e41b85eb37"
+    },
+    "pickup": {
+      "slot": "pickup",
+      "file": "assets/pickup.svg",
+      "source": "template",
+      "appliedAt": "2026-11-24T04:18:50.070Z",
+      "license": "MIT (bundled template art, original to dsh-game-studio)",
+      "sha256": "2c48e9056196f33fb792c0cbb6e97765d8d433f9c152d6d9b8aa71e9fa27cab4"
+    },
+    "background": {
+      "slot": "background",
+      "file": "assets/background.svg",
+      "source": "template",
+      "appliedAt": "2026-11-24T04:18:50.070Z",
+      "license": "MIT (bundled template art, original to dsh-game-studio)",
+      "sha256": "d1f3f4027641bebc2ef20015d910705ddcb92adb408e2ec8a1bd26fc10468b34"
+    },
+    "fries": {
+      "slot": "fries",
+      "file": "assets/fries.svg",
+      "source": "template",
+      "appliedAt": "2026-11-24T04:18:50.070Z",
+      "license": "MIT (bundled template art, original to dsh-game-studio)",
+      "sha256": "0991d6e6fb1eef793d0b52aeeaa2e8f29fef78bbb0d0301cd32b3eba05e725dc"
+    },
+    "rings": {
+      "slot": "rings",
+      "file": "assets/rings.svg",
+      "source": "template",
+      "appliedAt": "2026-11-24T04:18:50.070Z",
+      "license": "MIT (bundled template art, original to dsh-game-studio)",
+      "sha256": "3d3a3a5a22d33e92e321215f83fb611c4ef436e4d861a9c363ba150deef14680"
+    },
+    "sandwich": {
+      "slot": "sandwich",
+      "file": "assets/sandwich.svg",
+      "source": "template",
+      "appliedAt": "2026-11-24T04:18:50.070Z",
+      "license": "MIT (bundled template art, original to dsh-game-studio)",
+      "sha256": "a988a5d41bdb68762308d943a3fe582be8cafb9cd39843f0a61066857f36a622"
+    }
+  }
+}

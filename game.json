@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "template": "collector",
+  "title": "这单怎么装？",
+  "slots": {
+    "hero": {
+      "file": "assets/hero.svg",
+      "label": "热汉堡",
+      "size": [
+        256,
+        256
+      ],
+      "transparent": true
+    },
+    "pickup": {
+      "file": "assets/pickup.svg",
+      "label": "冰饮",
+      "size": [
+        256,
+        256
+      ],
+      "transparent": true
+    },
+    "background": {
+      "file": "assets/background.svg",
+      "label": "外卖打包台",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": false,
+      "tile": true
+    },
+    "fries": {
+      "file": "assets/fries.svg",
+      "label": "薯条",
+      "size": [
+        256,
+        256
+      ],
+      "transparent": true
+    },
+    "rings": {
+      "file": "assets/rings.svg",
+      "label": "洋葱圈",
+      "size": [
+        256,
+        256
+      ],
+      "transparent": true
+    },
+    "sandwich": {
+      "file": "assets/sandwich.svg",
+      "label": "三明治",
+      "size": [
+        256,
+        256
+      ],
+      "transparent": true
+    }
+  },
+  "rules": {},
+  "style": "Handcrafted fast-food counter, punchy tomato red and butter yellow, crisp illustrated food-charms and kraft paper."
+}
