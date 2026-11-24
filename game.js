@@ -78,7 +78,7 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const live = document.createElement('div');
   live.setAttribute('aria-live', 'polite');
-  live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;' +
+  live.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;' +
     'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);';
   canvas.setAttribute('aria-label', '这单怎么装？用触屏拖动餐品，或按数字键选餐品，方向键定位，回车摆放。');
   document.body.append(live);
