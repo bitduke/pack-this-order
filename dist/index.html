@@ -2,7 +2,7 @@
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; media-src data: blob:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'">
-<title>这单怎么装？</title><meta name="description" content="手机竖屏餐盒解谜，八关和自选套餐。">
+<title>这单怎么装？</title><meta name="description" content="手机竖屏餐盒解谜，八关闯关和四位客人的自选套餐。">
 <style>html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}canvas{display:block;width:100vw;height:100vh;height:100dvh;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}</style></head><body><canvas id="game" tabindex="0"></canvas>
 <script>window.addEventListener("keydown",function(e){if(e.key==="Escape")try{parent.postMessage({type:"dsh-wall-escape"},"*")}catch(_){}});window.GAME={"title":"这单怎么装？","rules":{},"slots":{"hero":{"tile":false,"custom":false},"pickup":{"tile":false,"custom":false},"background":{"tile":true,"custom":false},"fries":{"tile":false,"custom":false},"rings":{"tile":false,"custom":false},"sandwich":{"tile":false,"custom":false}},"assets":{"hero":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiI+DQogIDwhLS0gTGl0dGxlIHJvdW5kIGFkdmVudHVyZXIsIGZhY2luZyB0aGUgdmlld2VyLiBGbGF0IGNhcnRvb24sIGRhcmsgb3V0bGluZS4gLS0+DQogIDwhLS0gR3JvdW5kIHNoYWRvdyAtLT4NCiAgPGVsbGlwc2UgY3g9IjEyOCIgY3k9IjIyOCIgcng9IjU4IiByeT0iMTYiIGZpbGw9IiMxZjRkMmUiIG9wYWNpdHk9IjAuMzUiLz4NCiAgPCEtLSBCYWNrcGFjayAtLT4NCiAgPHJlY3QgeD0iNTYiIHk9IjEyMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUyIiByeD0iMTIiIGZpbGw9IiNlOGExM2MiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxwYXRoIGQ9Ik01NiAxMzJoNDAiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogIDwhLS0gTGVncyAtLT4NCiAgPHJlY3QgeD0iODYiIHk9IjE2OCIgd2lkdGg9IjI2IiBoZWlnaHQ9IjQ0IiByeD0iMTIiIGZpbGw9IiMyZjZiNGYiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9IjEzNCIgeT0iMTY4IiB3aWR0aD0iMjYiIGhlaWdodD0iNDQiIHJ4PSIxMiIgZmlsbD0iIzJmNmI0ZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBCb290cyAtLT4NCiAgPHJlY3QgeD0iNzgiIHk9IjE5OCIgd2lkdGg9IjQyIiBoZWlnaHQ9IjIyIiByeD0iMTAiIGZpbGw9IiM3YTRhMmIiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9IjEyOCIgeT0iMTk4IiB3aWR0aD0iNDIiIGhlaWdodD0iMjIiIHJ4PSIxMCIgZmlsbD0iIzdhNGEyYiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBCb2R5IC0tPg0KICA8cGF0aCBkPSJNNzYgOTZjMC0yNiAyMC00NiA0Ni00NmgxMmMyNiAwIDQ2IDIwIDQ2IDQ2djYyYzAgMjItMTYgNDAtMzggNDJoLTI4Yy0yMi0yLTM4LTIwLTM4LTQyeiIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBCZWx0IC0tPg0KICA8cmVjdCB4PSI3NiIgeT0iMTUwIiB3aWR0aD0iMTA0IiBoZWlnaHQ9IjE0IiBmaWxsPSIjMmIxYjEyIi8+DQogIDxyZWN0IHg9IjExOCIgeT0iMTQ4IiB3aWR0aD0iMjAiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSIjZjJjMTRlIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICA8IS0tIFNjYXJmIGtub3QgLS0+DQogIDxwYXRoIGQ9Ik05NiA5OGM4IDggMjAgMTIgMzIgMTJzMjQtNCAzMi0xMmwtMTAgMThjLTYgNi0xNiA4LTIyIDhzLTE2LTItMjItOHoiIGZpbGw9IiMzZjhmNWEiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI3Ii8+DQogIDwhLS0gQXJtcyAtLT4NCiAgPHJlY3QgeD0iNDQiIHk9IjEwOCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjU0IiByeD0iMTUiIGZpbGw9IiNlODVkM2QiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9IjE4MiIgeT0iMTA4IiB3aWR0aD0iMzAiIGhlaWdodD0iNTQiIHJ4PSIxNSIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPGNpcmNsZSBjeD0iNTkiIGN5PSIxNzAiIHI9IjE0IiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIvPg0KICA8Y2lyY2xlIGN4PSIxOTciIGN5PSIxNzAiIHI9IjE0IiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIvPg0KICA8IS0tIEhlYWQgLS0+DQogIDxjaXJjbGUgY3g9IjEyOCIgY3k9IjgyIiByPSI0MiIgZmlsbD0iI2Y3ZDlhOCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBFeWVzIC0tPg0KICA8ZWxsaXBzZSBjeD0iMTEyIiBjeT0iNzgiIHJ4PSI2IiByeT0iOCIgZmlsbD0iIzJiMWIxMiIvPg0KICA8ZWxsaXBzZSBjeD0iMTQ2IiBjeT0iNzgiIHJ4PSI2IiByeT0iOCIgZmlsbD0iIzJiMWIxMiIvPg0KICA8Y2lyY2xlIGN4PSIxMTQiIGN5PSI3NSIgcj0iMi40IiBmaWxsPSIjZmZmZmZmIi8+DQogIDxjaXJjbGUgY3g9IjE0OCIgY3k9Ijc1IiByPSIyLjQiIGZpbGw9IiNmZmZmZmYiLz4NCiAgPCEtLSBDaGVla3MgLS0+DQogIDxjaXJjbGUgY3g9Ijk4IiBjeT0iOTIiIHI9IjciIGZpbGw9IiNmMDhhNmUiIG9wYWNpdHk9IjAuOCIvPg0KICA8Y2lyY2xlIGN4PSIxNTgiIGN5PSI5MiIgcj0iNyIgZmlsbD0iI2YwOGE2ZSIgb3BhY2l0eT0iMC44Ii8+DQogIDwhLS0gTW91dGggLS0+DQogIDxwYXRoIGQ9Ik0xMTggOTZjNCA1IDE2IDUgMjAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8IS0tIEhhdCAtLT4NCiAgPHBhdGggZD0iTTg0IDY2YzAtMjAgMTYtMzYgMzYtMzZoMTZjMjAgMCAzNiAxNiAzNiAzNnYxNEg4NHoiIGZpbGw9IiMzZjhmNWEiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQogIDxyZWN0IHg9Ijc4IiB5PSI3MiIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxNiIgcng9IjgiIGZpbGw9IiMyZjZiNGYiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+DQo8L3N2Zz4NCg==","pickup":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiI+DQogIDwhLS0gR2xvd2luZyBwYXBlciBsYW50ZXJuLiBGbGF0IGNhcnRvb24sIGRhcmsgb3V0bGluZS4gLS0+DQogIDwhLS0gU29mdCBnbG93IC0tPg0KICA8Y2lyY2xlIGN4PSIxMjgiIGN5PSIxNDIiIHI9Ijg0IiBmaWxsPSIjZmZkNjZiIiBvcGFjaXR5PSIwLjI4Ii8+DQogIDxjaXJjbGUgY3g9IjEyOCIgY3k9IjE0MiIgcj0iNjAiIGZpbGw9IiNmZmM5NGQiIG9wYWNpdHk9IjAuNCIvPg0KICA8IS0tIEhhbmdpbmcgc3RyaW5nIC0tPg0KICA8bGluZSB4MT0iMTI4IiB5MT0iMTYiIHgyPSIxMjgiIHkyPSI0NiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8IS0tIFRvcCBjYXAgLS0+DQogIDxyZWN0IHg9IjkyIiB5PSI0NCIgd2lkdGg9IjcyIiBoZWlnaHQ9IjE4IiByeD0iOCIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPCEtLSBSaWJzIC0tPg0KICA8cGF0aCBkPSJNMTEyIDYwYzAgNDIgMTYgNjggMTYgOTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Q5OGEyYiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogIDxwYXRoIGQ9Ik0xNDQgNjBjMCA0Mi0xNiA2OC0xNiA5NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk4YTJiIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgPHBhdGggZD0iTTEyOCA2MHY5NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk4YTJiIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgPCEtLSBMYW50ZXJuIGJvZHkgLS0+DQogIDxwYXRoIGQ9Ik04OCA2MmMwIDU0IDE4IDg0IDQwIDg0czQwLTMwIDQwLTg0YzAtNi04LTEyLTIwLTEyaC00MGMtMTIgMC0yMCA2LTIwIDEyeiIgZmlsbD0iI2ZmYzk0ZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjgiLz4NCiAgPHBhdGggZD0iTTg4IDY2aDgwIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+DQogIDxwYXRoIGQ9Ik05MiAxNDZjMCA4IDggMTIgMTQgMTJoNDRjNiAwIDE0LTQgMTQtMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4NCiAgPCEtLSBCb3R0b20gY2FwIC0tPg0KICA8cmVjdCB4PSI5NCIgeT0iMTUwIiB3aWR0aD0iNjgiIGhlaWdodD0iMTYiIHJ4PSI4IiBmaWxsPSIjZTg1ZDNkIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iOCIvPg0KICA8IS0tIFRhc3NlbCAtLT4NCiAgPGxpbmUgeDE9IjEyOCIgeTE9IjE2NiIgeDI9IjEyOCIgeTI9IjE5MiIgc3Ryb2tlPSIjZTg1ZDNkIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8cGF0aCBkPSJNMTIwIDE5MmM0IDEyIDEyIDEyIDE2IDB6IiBmaWxsPSIjZTg1ZDNkIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPg0KICA8IS0tIElubmVyIGdsb3cgLS0+DQogIDxlbGxpcHNlIGN4PSIxMjgiIGN5PSIxMTYiIHJ4PSIyMiIgcnk9IjMwIiBmaWxsPSIjZmZmM2M0IiBvcGFjaXR5PSIwLjkiLz4NCjwvc3ZnPg0K","background":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+DQogIDwhLS0gVG9wLWRvd24gZ3Jhc3MgbWVhZG93IHRpbGUuIE9wYXF1ZSwgc2VhbWxlc3M7IGRldGFpbHMga2VwdCBjbGVhciBvZiBlZGdlcy4gLS0+DQogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSIjN2ZiZjVhIi8+DQogIDwhLS0gU29mdCBtb3R0bGluZyAtLT4NCiAgPGNpcmNsZSBjeD0iODAiIGN5PSI5MCIgcj0iNzAiIGZpbGw9IiM3NGIxNTEiIG9wYWNpdHk9IjAuNyIvPg0KICA8Y2lyY2xlIGN4PSI0MzAiIGN5PSIxMjAiIHI9IjgwIiBmaWxsPSIjOGFjODY2IiBvcGFjaXR5PSIwLjYiLz4NCiAgPGNpcmNsZSBjeD0iMTIwIiBjeT0iNDIwIiByPSI5MCIgZmlsbD0iIzhhYzg2NiIgb3BhY2l0eT0iMC41Ii8+DQogIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjQwMCIgcj0iNzAiIGZpbGw9IiM3NGIxNTEiIG9wYWNpdHk9IjAuNyIvPg0KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjEyMCIgZmlsbD0iIzc2YjM1MiIgb3BhY2l0eT0iMC4zNSIvPg0KICA8IS0tIEJsYWRlcyBvZiBncmFzcyAtLT4NCiAgPGcgc3Ryb2tlPSIjNWU5YTQxIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC44NSI+DQogICAgPHBhdGggZD0iTTkwIDE2MGM4LTE0IDYtMjYgMC0zNCIvPg0KICAgIDxwYXRoIGQ9Ik0xNTAgMzQwYzEwLTE2IDgtMzAgMC00MCIvPg0KICAgIDxwYXRoIGQ9Ik0zNjAgMTkwYzgtMTQgNi0yNiAwLTM0Ii8+DQogICAgPHBhdGggZD0iTTMwMCA0MjBjMTAtMTYgOC0zMCAwLTQwIi8+DQogICAgPHBhdGggZD0iTTQyMCAzMDBjOC0xNCA2LTI2IDAtMzQiLz4NCiAgICA8cGF0aCBkPSJNMTkwIDI0MGM4LTE0IDYtMjYgMC0zNCIvPg0KICAgIDxwYXRoIGQ9Ik0zMzAgMzMwYzgtMTQgNi0yNiAwLTM0Ii8+DQogIDwvZz4NCiAgPCEtLSBQZWJibGVzIC0tPg0KICA8ZWxsaXBzZSBjeD0iMjIwIiBjeT0iMTQwIiByeD0iMjAiIHJ5PSIxNCIgZmlsbD0iI2I5YzRiMCIgc3Ryb2tlPSIjOGY5YTg4IiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgPGVsbGlwc2UgY3g9IjIzMiIgY3k9IjE0NiIgcng9IjEwIiByeT0iNyIgZmlsbD0iI2NmZDhjNyIgb3BhY2l0eT0iMC45Ii8+DQogIDxlbGxpcHNlIGN4PSIzNTAiIGN5PSIzNjAiIHJ4PSIxNiIgcnk9IjExIiBmaWxsPSIjYjljNGIwIiBzdHJva2U9IiM4ZjlhODgiIHN0cm9rZS13aWR0aD0iNiIvPg0KICA8ZWxsaXBzZSBjeD0iMzAwIiBjeT0iMTgwIiByeD0iMTIiIHJ5PSI4IiBmaWxsPSIjYzRjZGJjIiBzdHJva2U9IiM4ZjlhODgiIHN0cm9rZS13aWR0aD0iNSIvPg0KICA8IS0tIEZsb3dlciAxIC0tPg0KICA8Zz4NCiAgICA8bGluZSB4MT0iMTUwIiB5MT0iMzAwIiB4Mj0iMTUwIiB5Mj0iMzUwIiBzdHJva2U9IiMzYzdhMmYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+DQogICAgPGNpcmNsZSBjeD0iMTM0IiBjeT0iMjkyIiByPSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNjYiIGN5PSIyOTIiIHI9IjEyIiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICAgIDxjaXJjbGUgY3g9IjE1MCIgY3k9IjI3NiIgcj0iMTIiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogICAgPGNpcmNsZSBjeD0iMTUwIiBjeT0iMzA4IiByPSIxMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNTAiIGN5PSIyOTIiIHI9IjEwIiBmaWxsPSIjZjJjMTRlIiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNSIvPg0KICA8L2c+DQogIDwhLS0gRmxvd2VyIDIgLS0+DQogIDxnPg0KICAgIDxsaW5lIHgxPSIzOTAiIHkxPSIyNTAiIHgyPSIzOTAiIHkyPSIyOTQiIHN0cm9rZT0iIzNjN2EyZiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNzYiIGN5PSIyNDQiIHI9IjEwIiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICAgIDxjaXJjbGUgY3g9IjQwNCIgY3k9IjI0NCIgcj0iMTAiIGZpbGw9IiNmN2Q5YTgiIHN0cm9rZT0iIzJiMWIxMiIgc3Ryb2tlLXdpZHRoPSI2Ii8+DQogICAgPGNpcmNsZSBjeD0iMzkwIiBjeT0iMjMwIiByPSIxMCIgZmlsbD0iI2Y3ZDlhOCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIzOTAiIGN5PSIyNTgiIHI9IjEwIiBmaWxsPSIjZjdkOWE4IiBzdHJva2U9IiMyYjFiMTIiIHN0cm9rZS13aWR0aD0iNiIvPg0KICAgIDxjaXJjbGUgY3g9IjM5MCIgY3k9IjI0NCIgcj0iOSIgZmlsbD0iI2U4NWQzZCIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjUiLz4NCiAgPC9nPg0KICA8IS0tIEZsb3dlciAzIChzbWFsbCBidWQpIC0tPg0KICA8Zz4NCiAgICA8bGluZSB4MT0iMjYwIiB5MT0iODYiIHgyPSIyNjAiIHkyPSIxMTIiIHN0cm9rZT0iIzNjN2EyZiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4NCiAgICA8Y2lyY2xlIGN4PSIyNjAiIGN5PSI4MCIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMmIxYjEyIiBzdHJva2Utd2lkdGg9IjUiLz4NCiAgICA8Y2lyY2xlIGN4PSIyNjAiIGN5PSI4MCIgcj0iNC41IiBmaWxsPSIjZjJjMTRlIi8+DQogIDwvZz4NCjwvc3ZnPg0K","fries":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PCEtLSBQbGFjZWhvbGRlciBmb3IgIuiWr+adoSI7IGRyYXcgb3ZlciB0aGlzIGZpbGUgb3IgZ2VuZXJhdGUgYXJ0IGZvciB0aGUgc2xvdC4gLS0+PGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMDgiIGZpbGw9ImhzbCg2NSA2MCUgNjIlKSIgc3Ryb2tlPSJoc2woNjUgNDUlIDI4JSkiIHN0cm9rZS13aWR0aD0iOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZvbnQtc2l6ZT0iOTIiIGZpbGw9ImhzbCg2NSA0NSUgMjIlKSI+6JavPC90ZXh0Pjwvc3ZnPgo=","rings":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PCEtLSBQbGFjZWhvbGRlciBmb3IgIua0i+iRseWciCI7IGRyYXcgb3ZlciB0aGlzIGZpbGUgb3IgZ2VuZXJhdGUgYXJ0IGZvciB0aGUgc2xvdC4gLS0+PGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMDgiIGZpbGw9ImhzbCgxMDcgNjAlIDYyJSkiIHN0cm9rZT0iaHNsKDEwNyA0NSUgMjglKSIgc3Ryb2tlLXdpZHRoPSI5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSI5MiIgZmlsbD0iaHNsKDEwNyA0NSUgMjIlKSI+5rSLPC90ZXh0Pjwvc3ZnPgo=","sandwich":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjU2IDI1NiI+PCEtLSBQbGFjZWhvbGRlciBmb3IgIuS4ieaYjuayuyI7IGRyYXcgb3ZlciB0aGlzIGZpbGUgb3IgZ2VuZXJhdGUgYXJ0IGZvciB0aGUgc2xvdC4gLS0+PGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMDgiIGZpbGw9ImhzbCgyOTUgNjAlIDYyJSkiIHN0cm9rZT0iaHNsKDI5NSA0NSUgMjglKSIgc3Ryb2tlLXdpZHRoPSI5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSI5MiIgZmlsbD0iaHNsKDI5NSA0NSUgMjIlKSI+5LiJPC90ZXh0Pjwvc3ZnPgo="}};</script>
 <script>(() => {
@@ -88,15 +88,41 @@
       solution: [['pickup', 0, 0], ['hero', 1, 2], ['sandwich', 3, 1, true], ['fries', 1, 0], ['rings', 0, 2, true], ['sauce', 0, 1]]
     }
   ];
-  const customOrder = {
-    title: '自选套餐', size: 4, rotate: true, heat: true, cup: { x: 1, y: 3 },
+  const customOrders = [
+    {
+      guest: '小林', title: '薯条配酱', cup: { x: 3, y: 0 }, sauceSides: ['fries'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce'],
+      dividers: [{ x: 0, y: 2 }, { x: 0, y: 3 }],
+      instruction: ['热汉堡、三明治二选一，其余都要装。', '冰饮归杯位，别挨着热汉堡。', '薯条和蘸酱贴边，方便蘸着吃。'],
+      hint: '摆薯条时，给蘸酱留一个相邻格。',
+      solution: [['pickup', 3, 0], ['hero', 0, 0], ['fries', 2, 0], ['sauce', 3, 1]]
+    },
+    {
+      guest: '阿岚', title: '分开装', cup: { x: 0, y: 1 }, sauceSides: ['fries'], sauceApart: ['rings'],
+      dividers: [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+      instruction: ['主食二选一，冰饮进杯位。', '热汉堡别挨冰饮，薯条要贴蘸酱。', '洋葱圈吃原味，不能贴蘸酱。'],
+      hint: '蘸酱要靠着薯条，但洋葱圈贴在另一处。',
+      solution: [['pickup', 0, 1], ['hero', 2, 0], ['fries', 0, 3, true], ['rings', 2, 3], ['sauce', 0, 2]]
+    },
+    {
+      guest: '阿远', title: '双拼蘸酱', cup: { x: 1, y: 3 }, sauceSides: ['fries', 'rings'],
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }],
+      instruction: ['热汉堡、三明治二选一，其余都要装。', '冰饮归杯位，别挨着热汉堡。', '薯条、洋葱圈都要贴同一份蘸酱。'],
+      hint: '找一个格子，两份小食都能伸到这格旁边。',
+      solution: [['pickup', 1, 3], ['hero', 2, 0], ['fries', 3, 2], ['rings', 1, 2], ['sauce', 2, 3]]
+    },
+    {
+      guest: '唐姐', title: '两边蘸', cup: { x: 3, y: 2 }, sauceSides: ['fries', 'rings'], sauceOpposite: true,
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+      instruction: ['主食二选一，冰饮进杯位。', '热汉堡别挨冰饮，蘸酱放在中间。', '薯条、蘸酱、洋葱圈要排成直线。'],
+      hint: '把两份小食放在酱盒的左和右，或上和下。',
+      solution: [['pickup', 3, 2], ['hero', 0, 2], ['fries', 2, 1, true], ['rings', 2, 3], ['sauce', 2, 2]]
+    }
+  ].map(order => ({
+    size: 4, rotate: true, heat: true, mainChoices: ['hero', 'sandwich'],
     foods: ['hero', 'sandwich', 'pickup', 'fries', 'rings', 'sauce'],
-    mainChoices: ['hero', 'sandwich'], sauceSides: ['fries', 'rings'],
-    dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }],
-    instruction: ['热汉堡、三明治二选一，其余都要装。', '冰饮归杯位，不能挨着热汉堡。', '薯条和洋葱圈都要与蘸酱贴边。'],
-    hint: '汉堡需要两格宽，三明治可以竖着放。',
-    solution: [['pickup', 1, 3], ['hero', 2, 0], ['fries', 3, 2], ['rings', 1, 2], ['sauce', 2, 3]]
-  };
+    ...order
+  }));
   const cues = {
     ready: '拖动餐品，或点选餐品试摆。',
     noRoom: '超出餐盒了，往里挪一格。',
@@ -109,11 +135,12 @@
     main: '主食二选一，要换就先取出已装主食。'
   };
   const finishText = '全部订单已装好！';
+  const edgeSteps = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
   let phase = 'title';
   let levelIndex = 0;
   let customMode = false;
-  const servedMains = new Set();
+  const servedMains = customOrders.map(() => new Set());
   let placed = new Map();
   let rotations = new Set();
   let selected = null;
@@ -145,7 +172,8 @@
   canvas.setAttribute('aria-label', '这单怎么装？首页回车开打，按 2 试自选套餐。游戏中可用数字选餐品、方向键移动、回车确认，按 R 旋转长条餐品。');
   document.body.append(live);
 
-  function currentLevel() { return customMode ? customOrder : levels[levelIndex]; }
+  function currentOrders() { return customMode ? customOrders : levels; }
+  function currentLevel() { return currentOrders()[levelIndex]; }
   function requiredFoodCount() {
     const level = currentLevel();
     return level.mainChoices ? level.foods.length - level.mainChoices.length + 1 : level.foods.length;
@@ -180,10 +208,34 @@
       aPos.y < bPos.y + bSize.h && aPos.y + aSize.h > bPos.y;
   }
   function touchesCell(key, position, cell) {
-    return [
-      [cell.x - 1, cell.y], [cell.x + 1, cell.y],
-      [cell.x, cell.y - 1], [cell.x, cell.y + 1]
-    ].some(([x, y]) => covers(key, position, x, y));
+    return edgeSteps.some(([dx, dy]) => covers(key, position, cell.x + dx, cell.y + dy));
+  }
+  function checkSaucePlacement(level, key, position) {
+    const sides = level.sauceSides;
+    const apart = level.sauceApart || [];
+    if (!sides || (key !== 'sauce' && !sides.includes(key) && !apart.includes(key))) return '';
+    const locationOf = target => target === key ? position : placed.get(target);
+    const sauce = locationOf('sauce');
+    if (!sauce) return '';
+    for (const sideKey of sides) {
+      const side = locationOf(sideKey);
+      if (side && !touchesCell(sideKey, side, sauce)) return items[sideKey].label + '和蘸酱要上下或左右挨着。';
+    }
+    for (const sideKey of apart) {
+      const side = locationOf(sideKey);
+      if (side && touchesCell(sideKey, side, sauce)) return items[sideKey].label + '要和蘸酱分开。';
+    }
+    if (level.sauceOpposite) {
+      const [firstKey, secondKey] = sides;
+      const first = locationOf(firstKey);
+      const second = locationOf(secondKey);
+      const across = first && second && edgeSteps.some(([dx, dy]) =>
+        covers(firstKey, first, sauce.x + dx, sauce.y + dy) &&
+        covers(secondKey, second, sauce.x - dx, sauce.y - dy)
+      );
+      if (first && second && !across) return '蘸酱要夹在两份小食之间，排成直线。';
+    }
+    return '';
   }
   function checkPlacement(key, position) {
     const level = currentLevel();
@@ -202,18 +254,7 @@
     const hot = key === 'hero' ? position : placed.get('hero');
     const cold = key === 'pickup' ? position : placed.get('pickup') || reserve;
     if (level.heat && hot && cold && touchesCell('hero', hot, cold)) return cues.heat;
-    if (level.sauceSides && (key === 'sauce' || level.sauceSides.includes(key))) {
-      const sauce = key === 'sauce' ? position : placed.get('sauce');
-      if (sauce) {
-        for (const sideKey of level.sauceSides) {
-          const side = key === sideKey ? position : placed.get(sideKey);
-          if (side && !touchesCell(sideKey, side, sauce)) {
-            return items[sideKey].label + '和蘸酱要上下或左右挨着。';
-          }
-        }
-      }
-    }
-    return '';
+    return checkSaucePlacement(level, key, position);
   }
   function occupant(cell) {
     if (!cell) return null;
@@ -254,13 +295,13 @@
     lastPiece = key;
     placedAt = performance.now();
     if (placed.size === requiredFoodCount()) {
-      phase = customMode || levelIndex === levels.length - 1 ? 'won' : 'order-complete';
+      phase = levelIndex === currentOrders().length - 1 ? 'won' : 'order-complete';
       completedAt = placedAt;
       autoplayAt = placedAt;
       if (customMode) {
         const main = packedMain();
-        servedMains.add(main);
-        say(items[main].label + '套餐出餐成功！', 'success');
+        servedMains[levelIndex].add(main);
+        say(currentLevel().guest + '的' + items[main].label + '餐出餐成功！', 'success');
       } else {
         say(phase === 'won' ? finishText : '打包成功！', 'success');
       }
@@ -330,10 +371,11 @@
       customStart: box(45, height - 107, 300, 48),
       home: box(245, 61, 119, 36),
       mute: box(315, 16, 55, 44),
-      modal: box(31, height / 2 - 108, 328, 220),
+      modal: box(31, height / 2 - 108, 328, customMode ? 254 : 220),
       advance: box(58, height / 2 + 38, 274, 53),
-      customReplay: box(191, height / 2 + 38, 141, 53),
-      customHome: box(58, height / 2 + 38, 120, 53)
+      customRetry: box(58, height / 2 + 38, 120, 53),
+      customNext: box(191, height / 2 + 38, 141, 53),
+      customHome: box(115, height / 2 + 96, 160, 44)
     };
   }
   function gridCell(point, g) {
@@ -605,7 +647,7 @@
   function drawTitle(g) {
     checker(33);
     label('这单怎么装？', width / 2, 118, 46, colors.red, 900, 'center');
-    label(levels.length + ' 单闯关，外加一份自选套餐。', width / 2, 161, 16, colors.subtle, 650, 'center');
+    label(levels.length + ' 单闯关，另有 ' + customOrders.length + ' 位客人等你接单。', width / 2, 161, 16, colors.subtle, 650, 'center');
     const center = 342 + (height - 720) * .40;
     ctx.save();
     ctx.translate(width / 2, center);
@@ -626,7 +668,7 @@
     sprite('pickup', 92, 23, 99);
     ctx.restore();
     button(g.start, '开始打包');
-    secondaryButton(g.customStart, '试自选套餐 · 已试主食 ' + servedMains.size + '/' + customOrder.mainChoices.length);
+    secondaryButton(g.customStart, '自选套餐 · ' + customOrders.length + ' 位客人');
     label('支持拖动，也可以点选摆放', width / 2, height - 34, 14, colors.subtle, 550, 'center');
   }
 
@@ -635,7 +677,7 @@
     round(g.mute.x, g.mute.y + 5, g.mute.w, 34, 10, colors.paper, '#d6b887', 1);
     label(muted ? '静音' : '音效开', g.mute.x + g.mute.w / 2, g.mute.y + 22, 13, colors.ink, 700, 'center');
     if (customMode) {
-      label('已试主食 ' + servedMains.size + '/' + customOrder.mainChoices.length, 26, 81, 14, colors.ink, 750);
+      label('客单 ' + (levelIndex + 1) + ' / ' + customOrders.length, 26, 81, 14, colors.ink, 750);
       secondaryButton(g.home, '回到首页');
     } else {
       label('订单 ' + (levelIndex + 1) + ' / ' + levels.length, 26, 81, 14, colors.ink, 750);
@@ -648,10 +690,11 @@
     const r = g.receipt;
     round(r.x + 2, r.y + 4, r.w, r.h, 11, '#d5ae77');
     round(r.x, r.y, r.w, r.h, 11, colors.paper);
-    label(currentLevel().title, r.x + 15, r.y + 20, 19, colors.ink, 800);
+    const level = currentLevel();
+    label(customMode ? level.guest + ' · ' + level.title : level.title, r.x + 15, r.y + 20, 19, colors.ink, 800);
     label('已装 ' + placed.size + '/' + requiredFoodCount(), r.x + r.w - 15, r.y + 20, 14, colors.green, 700, 'right');
     rule(r.x + 15, r.x + r.w - 15, r.y + 38, '#c7a77b');
-    const lines = currentLevel().instruction;
+    const lines = level.instruction;
     const lineStep = lines.length > 2 ? 17 : 19;
     lines.forEach((line, i) => label(line, r.x + 15, r.y + 54 + i * lineStep, 15, colors.subtle, 650));
   }
@@ -741,13 +784,19 @@
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
     const sides = level.sauceSides || [];
-    const pairCount = placed.has('sauce') ? sides.filter(key => placed.has(key)).length : 0;
-    const paired = sides.length > 0 && pairCount === sides.length;
+    const pairRules = [...sides, ...(level.sauceApart || [])];
+    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite));
+    let pairCount = 0;
+    if (placed.has('sauce')) {
+      pairCount = pairRules.filter(key => placed.has(key)).length;
+      if (level.sauceOpposite && sides.every(key => placed.has(key))) pairCount++;
+    }
+    const paired = pairTarget > 0 && pairCount === pairTarget;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
     if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
     if (sides.length > 1) trayHint = '蘸酱搭配 ' + pairCount + '/' + sides.length;
     const main = packedMain();
-    if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + sides.length;
+    if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + pairTarget;
     const trayReady = paired && (!level.mainChoices || main);
     label(trayHint, width - 27, g.foodLabelY, 13, trayReady ? colors.green : colors.subtle, 650, 'right');
     for (const card of g.tray) {
@@ -813,10 +862,15 @@
     round(x, y, w, h, 19, colors.paper, '#b48752', 2);
     round(x + 16, y + 16, w - 32, 6, 3, colors.tomato);
     if (customMode) {
-      label('自选套餐装好了！', width / 2, y + 66, 30, colors.red, 850, 'center');
-      label('本单主食 · ' + items[packedMain()].label, width / 2, y + 107, 15, colors.subtle, 650, 'center');
-      secondaryButton(g.customHome, '回到首页');
-      button(g.customReplay, '再试一份');
+      const level = currentLevel();
+      label(final ? customOrders.length + ' 位客人都出餐了！' : level.guest + '这单装好了！',
+        width / 2, y + 65, 27, colors.red, 850, 'center');
+      label('本单主食 ' + items[packedMain()].label + ' · 已试 ' + servedMains[levelIndex].size + '/' + level.mainChoices.length,
+        width / 2, y + 108, 15, colors.subtle, 650, 'center');
+      secondaryButton(g.customRetry, '重做本单');
+      button(g.customNext, final ? '再接一轮' : '接下一单');
+      label('回到首页', g.customHome.x + g.customHome.w / 2, g.customHome.y + g.customHome.h / 2,
+        14, colors.red, 750, 'center');
       return;
     }
     label(final ? finishText : '打包成功！', width / 2, y + 66, 30, colors.red, 850, 'center');
@@ -900,7 +954,8 @@
     if (phase !== 'playing') {
       if (performance.now() - completedAt < 160) return;
       if (customMode && inside(at, g.customHome)) returnToTitle();
-      else if (inside(at, customMode ? g.customReplay : g.advance)) advance();
+      else if (customMode && inside(at, g.customRetry)) start(levelIndex);
+      else if (inside(at, customMode ? g.customNext : g.advance)) advance();
       return;
     }
     if (customMode && inside(at, g.home)) {
@@ -1071,7 +1126,8 @@
   window.__gameState = () => ({
     phase: phase === 'order-complete' ? 'playing' : phase,
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
-    mode: customMode ? 'custom' : 'campaign', main: packedMain() || null, servedMains: [...servedMains],
+    mode: customMode ? 'custom' : 'campaign', main: packedMain() || null,
+    guest: customMode ? currentLevel().guest : null, servedMains: customMode ? [...servedMains[levelIndex]] : [],
     preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }

@@ -81,15 +81,41 @@
       solution: [['pickup', 0, 0], ['hero', 1, 2], ['sandwich', 3, 1, true], ['fries', 1, 0], ['rings', 0, 2, true], ['sauce', 0, 1]]
     }
   ];
-  const customOrder = {
-    title: '自选套餐', size: 4, rotate: true, heat: true, cup: { x: 1, y: 3 },
+  const customOrders = [
+    {
+      guest: '小林', title: '薯条配酱', cup: { x: 3, y: 0 }, sauceSides: ['fries'],
+      foods: ['hero', 'sandwich', 'pickup', 'fries', 'sauce'],
+      dividers: [{ x: 0, y: 2 }, { x: 0, y: 3 }],
+      instruction: ['热汉堡、三明治二选一，其余都要装。', '冰饮归杯位，别挨着热汉堡。', '薯条和蘸酱贴边，方便蘸着吃。'],
+      hint: '摆薯条时，给蘸酱留一个相邻格。',
+      solution: [['pickup', 3, 0], ['hero', 0, 0], ['fries', 2, 0], ['sauce', 3, 1]]
+    },
+    {
+      guest: '阿岚', title: '分开装', cup: { x: 0, y: 1 }, sauceSides: ['fries'], sauceApart: ['rings'],
+      dividers: [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+      instruction: ['主食二选一，冰饮进杯位。', '热汉堡别挨冰饮，薯条要贴蘸酱。', '洋葱圈吃原味，不能贴蘸酱。'],
+      hint: '蘸酱要靠着薯条，但洋葱圈贴在另一处。',
+      solution: [['pickup', 0, 1], ['hero', 2, 0], ['fries', 0, 3, true], ['rings', 2, 3], ['sauce', 0, 2]]
+    },
+    {
+      guest: '阿远', title: '双拼蘸酱', cup: { x: 1, y: 3 }, sauceSides: ['fries', 'rings'],
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }],
+      instruction: ['热汉堡、三明治二选一，其余都要装。', '冰饮归杯位，别挨着热汉堡。', '薯条、洋葱圈都要贴同一份蘸酱。'],
+      hint: '找一个格子，两份小食都能伸到这格旁边。',
+      solution: [['pickup', 1, 3], ['hero', 2, 0], ['fries', 3, 2], ['rings', 1, 2], ['sauce', 2, 3]]
+    },
+    {
+      guest: '唐姐', title: '两边蘸', cup: { x: 3, y: 2 }, sauceSides: ['fries', 'rings'], sauceOpposite: true,
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+      instruction: ['主食二选一，冰饮进杯位。', '热汉堡别挨冰饮，蘸酱放在中间。', '薯条、蘸酱、洋葱圈要排成直线。'],
+      hint: '把两份小食放在酱盒的左和右，或上和下。',
+      solution: [['pickup', 3, 2], ['hero', 0, 2], ['fries', 2, 1, true], ['rings', 2, 3], ['sauce', 2, 2]]
+    }
+  ].map(order => ({
+    size: 4, rotate: true, heat: true, mainChoices: ['hero', 'sandwich'],
     foods: ['hero', 'sandwich', 'pickup', 'fries', 'rings', 'sauce'],
-    mainChoices: ['hero', 'sandwich'], sauceSides: ['fries', 'rings'],
-    dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }],
-    instruction: ['热汉堡、三明治二选一，其余都要装。', '冰饮归杯位，不能挨着热汉堡。', '薯条和洋葱圈都要与蘸酱贴边。'],
-    hint: '汉堡需要两格宽，三明治可以竖着放。',
-    solution: [['pickup', 1, 3], ['hero', 2, 0], ['fries', 3, 2], ['rings', 1, 2], ['sauce', 2, 3]]
-  };
+    ...order
+  }));
   const cues = {
     ready: '拖动餐品，或点选餐品试摆。',
     noRoom: '超出餐盒了，往里挪一格。',
@@ -102,11 +128,12 @@
     main: '主食二选一，要换就先取出已装主食。'
   };
   const finishText = '全部订单已装好！';
+  const edgeSteps = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
   let phase = 'title';
   let levelIndex = 0;
   let customMode = false;
-  const servedMains = new Set();
+  const servedMains = customOrders.map(() => new Set());
   let placed = new Map();
   let rotations = new Set();
   let selected = null;
@@ -138,7 +165,8 @@
   canvas.setAttribute('aria-label', '这单怎么装？首页回车开打，按 2 试自选套餐。游戏中可用数字选餐品、方向键移动、回车确认，按 R 旋转长条餐品。');
   document.body.append(live);
 
-  function currentLevel() { return customMode ? customOrder : levels[levelIndex]; }
+  function currentOrders() { return customMode ? customOrders : levels; }
+  function currentLevel() { return currentOrders()[levelIndex]; }
   function requiredFoodCount() {
     const level = currentLevel();
     return level.mainChoices ? level.foods.length - level.mainChoices.length + 1 : level.foods.length;
@@ -173,10 +201,34 @@
       aPos.y < bPos.y + bSize.h && aPos.y + aSize.h > bPos.y;
   }
   function touchesCell(key, position, cell) {
-    return [
-      [cell.x - 1, cell.y], [cell.x + 1, cell.y],
-      [cell.x, cell.y - 1], [cell.x, cell.y + 1]
-    ].some(([x, y]) => covers(key, position, x, y));
+    return edgeSteps.some(([dx, dy]) => covers(key, position, cell.x + dx, cell.y + dy));
+  }
+  function checkSaucePlacement(level, key, position) {
+    const sides = level.sauceSides;
+    const apart = level.sauceApart || [];
+    if (!sides || (key !== 'sauce' && !sides.includes(key) && !apart.includes(key))) return '';
+    const locationOf = target => target === key ? position : placed.get(target);
+    const sauce = locationOf('sauce');
+    if (!sauce) return '';
+    for (const sideKey of sides) {
+      const side = locationOf(sideKey);
+      if (side && !touchesCell(sideKey, side, sauce)) return items[sideKey].label + '和蘸酱要上下或左右挨着。';
+    }
+    for (const sideKey of apart) {
+      const side = locationOf(sideKey);
+      if (side && touchesCell(sideKey, side, sauce)) return items[sideKey].label + '要和蘸酱分开。';
+    }
+    if (level.sauceOpposite) {
+      const [firstKey, secondKey] = sides;
+      const first = locationOf(firstKey);
+      const second = locationOf(secondKey);
+      const across = first && second && edgeSteps.some(([dx, dy]) =>
+        covers(firstKey, first, sauce.x + dx, sauce.y + dy) &&
+        covers(secondKey, second, sauce.x - dx, sauce.y - dy)
+      );
+      if (first && second && !across) return '蘸酱要夹在两份小食之间，排成直线。';
+    }
+    return '';
   }
   function checkPlacement(key, position) {
     const level = currentLevel();
@@ -195,18 +247,7 @@
     const hot = key === 'hero' ? position : placed.get('hero');
     const cold = key === 'pickup' ? position : placed.get('pickup') || reserve;
     if (level.heat && hot && cold && touchesCell('hero', hot, cold)) return cues.heat;
-    if (level.sauceSides && (key === 'sauce' || level.sauceSides.includes(key))) {
-      const sauce = key === 'sauce' ? position : placed.get('sauce');
-      if (sauce) {
-        for (const sideKey of level.sauceSides) {
-          const side = key === sideKey ? position : placed.get(sideKey);
-          if (side && !touchesCell(sideKey, side, sauce)) {
-            return items[sideKey].label + '和蘸酱要上下或左右挨着。';
-          }
-        }
-      }
-    }
-    return '';
+    return checkSaucePlacement(level, key, position);
   }
   function occupant(cell) {
     if (!cell) return null;
@@ -247,13 +288,13 @@
     lastPiece = key;
     placedAt = performance.now();
     if (placed.size === requiredFoodCount()) {
-      phase = customMode || levelIndex === levels.length - 1 ? 'won' : 'order-complete';
+      phase = levelIndex === currentOrders().length - 1 ? 'won' : 'order-complete';
       completedAt = placedAt;
       autoplayAt = placedAt;
       if (customMode) {
         const main = packedMain();
-        servedMains.add(main);
-        say(items[main].label + '套餐出餐成功！', 'success');
+        servedMains[levelIndex].add(main);
+        say(currentLevel().guest + '的' + items[main].label + '餐出餐成功！', 'success');
       } else {
         say(phase === 'won' ? finishText : '打包成功！', 'success');
       }
@@ -323,10 +364,11 @@
       customStart: box(45, height - 107, 300, 48),
       home: box(245, 61, 119, 36),
       mute: box(315, 16, 55, 44),
-      modal: box(31, height / 2 - 108, 328, 220),
+      modal: box(31, height / 2 - 108, 328, customMode ? 254 : 220),
       advance: box(58, height / 2 + 38, 274, 53),
-      customReplay: box(191, height / 2 + 38, 141, 53),
-      customHome: box(58, height / 2 + 38, 120, 53)
+      customRetry: box(58, height / 2 + 38, 120, 53),
+      customNext: box(191, height / 2 + 38, 141, 53),
+      customHome: box(115, height / 2 + 96, 160, 44)
     };
   }
   function gridCell(point, g) {
@@ -598,7 +640,7 @@
   function drawTitle(g) {
     checker(33);
     label('这单怎么装？', width / 2, 118, 46, colors.red, 900, 'center');
-    label(levels.length + ' 单闯关，外加一份自选套餐。', width / 2, 161, 16, colors.subtle, 650, 'center');
+    label(levels.length + ' 单闯关，另有 ' + customOrders.length + ' 位客人等你接单。', width / 2, 161, 16, colors.subtle, 650, 'center');
     const center = 342 + (height - 720) * .40;
     ctx.save();
     ctx.translate(width / 2, center);
@@ -619,7 +661,7 @@
     sprite('pickup', 92, 23, 99);
     ctx.restore();
     button(g.start, '开始打包');
-    secondaryButton(g.customStart, '试自选套餐 · 已试主食 ' + servedMains.size + '/' + customOrder.mainChoices.length);
+    secondaryButton(g.customStart, '自选套餐 · ' + customOrders.length + ' 位客人');
     label('支持拖动，也可以点选摆放', width / 2, height - 34, 14, colors.subtle, 550, 'center');
   }
 
@@ -628,7 +670,7 @@
     round(g.mute.x, g.mute.y + 5, g.mute.w, 34, 10, colors.paper, '#d6b887', 1);
     label(muted ? '静音' : '音效开', g.mute.x + g.mute.w / 2, g.mute.y + 22, 13, colors.ink, 700, 'center');
     if (customMode) {
-      label('已试主食 ' + servedMains.size + '/' + customOrder.mainChoices.length, 26, 81, 14, colors.ink, 750);
+      label('客单 ' + (levelIndex + 1) + ' / ' + customOrders.length, 26, 81, 14, colors.ink, 750);
       secondaryButton(g.home, '回到首页');
     } else {
       label('订单 ' + (levelIndex + 1) + ' / ' + levels.length, 26, 81, 14, colors.ink, 750);
@@ -641,10 +683,11 @@
     const r = g.receipt;
     round(r.x + 2, r.y + 4, r.w, r.h, 11, '#d5ae77');
     round(r.x, r.y, r.w, r.h, 11, colors.paper);
-    label(currentLevel().title, r.x + 15, r.y + 20, 19, colors.ink, 800);
+    const level = currentLevel();
+    label(customMode ? level.guest + ' · ' + level.title : level.title, r.x + 15, r.y + 20, 19, colors.ink, 800);
     label('已装 ' + placed.size + '/' + requiredFoodCount(), r.x + r.w - 15, r.y + 20, 14, colors.green, 700, 'right');
     rule(r.x + 15, r.x + r.w - 15, r.y + 38, '#c7a77b');
-    const lines = currentLevel().instruction;
+    const lines = level.instruction;
     const lineStep = lines.length > 2 ? 17 : 19;
     lines.forEach((line, i) => label(line, r.x + 15, r.y + 54 + i * lineStep, 15, colors.subtle, 650));
   }
@@ -734,13 +777,19 @@
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
     const sides = level.sauceSides || [];
-    const pairCount = placed.has('sauce') ? sides.filter(key => placed.has(key)).length : 0;
-    const paired = sides.length > 0 && pairCount === sides.length;
+    const pairRules = [...sides, ...(level.sauceApart || [])];
+    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite));
+    let pairCount = 0;
+    if (placed.has('sauce')) {
+      pairCount = pairRules.filter(key => placed.has(key)).length;
+      if (level.sauceOpposite && sides.every(key => placed.has(key))) pairCount++;
+    }
+    const paired = pairTarget > 0 && pairCount === pairTarget;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
     if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
     if (sides.length > 1) trayHint = '蘸酱搭配 ' + pairCount + '/' + sides.length;
     const main = packedMain();
-    if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + sides.length;
+    if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + pairTarget;
     const trayReady = paired && (!level.mainChoices || main);
     label(trayHint, width - 27, g.foodLabelY, 13, trayReady ? colors.green : colors.subtle, 650, 'right');
     for (const card of g.tray) {
@@ -806,10 +855,15 @@
     round(x, y, w, h, 19, colors.paper, '#b48752', 2);
     round(x + 16, y + 16, w - 32, 6, 3, colors.tomato);
     if (customMode) {
-      label('自选套餐装好了！', width / 2, y + 66, 30, colors.red, 850, 'center');
-      label('本单主食 · ' + items[packedMain()].label, width / 2, y + 107, 15, colors.subtle, 650, 'center');
-      secondaryButton(g.customHome, '回到首页');
-      button(g.customReplay, '再试一份');
+      const level = currentLevel();
+      label(final ? customOrders.length + ' 位客人都出餐了！' : level.guest + '这单装好了！',
+        width / 2, y + 65, 27, colors.red, 850, 'center');
+      label('本单主食 ' + items[packedMain()].label + ' · 已试 ' + servedMains[levelIndex].size + '/' + level.mainChoices.length,
+        width / 2, y + 108, 15, colors.subtle, 650, 'center');
+      secondaryButton(g.customRetry, '重做本单');
+      button(g.customNext, final ? '再接一轮' : '接下一单');
+      label('回到首页', g.customHome.x + g.customHome.w / 2, g.customHome.y + g.customHome.h / 2,
+        14, colors.red, 750, 'center');
       return;
     }
     label(final ? finishText : '打包成功！', width / 2, y + 66, 30, colors.red, 850, 'center');
@@ -893,7 +947,8 @@
     if (phase !== 'playing') {
       if (performance.now() - completedAt < 160) return;
       if (customMode && inside(at, g.customHome)) returnToTitle();
-      else if (inside(at, customMode ? g.customReplay : g.advance)) advance();
+      else if (customMode && inside(at, g.customRetry)) start(levelIndex);
+      else if (inside(at, customMode ? g.customNext : g.advance)) advance();
       return;
     }
     if (customMode && inside(at, g.home)) {
@@ -1064,7 +1119,8 @@
   window.__gameState = () => ({
     phase: phase === 'order-complete' ? 'playing' : phase,
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
-    mode: customMode ? 'custom' : 'campaign', main: packedMain() || null, servedMains: [...servedMains],
+    mode: customMode ? 'custom' : 'campaign', main: packedMain() || null,
+    guest: customMode ? currentLevel().guest : null, servedMains: customMode ? [...servedMains[levelIndex]] : [],
     preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
