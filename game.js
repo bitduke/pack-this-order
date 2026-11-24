@@ -50,11 +50,35 @@
       solution: [['sandwich', 3, 0, true], ['hero', 0, 2], ['fries', 0, 0], ['rings', 2, 2, true]]
     },
     {
-      title: '成套出餐', size: 4, rotate: true, heat: true, cup: { x: 3, y: 0 }, pairSauce: true,
+      title: '成套出餐', size: 4, rotate: true, heat: true, cup: { x: 3, y: 0 }, sauceSides: ['fries'],
       foods: ['hero', 'pickup', 'fries', 'sauce', 'sandwich'],
       instruction: ['薯条和蘸酱要上下或左右挨着。', '冰饮进杯位，冷热仍要分开。'],
       hint: '先给薯条留一格放蘸酱的位置。',
       solution: [['pickup', 3, 0], ['hero', 0, 0], ['sandwich', 0, 2], ['fries', 2, 1, true], ['sauce', 2, 0]]
+    },
+    {
+      title: '隔板套餐', size: 4, rotate: true, heat: true, cup: { x: 3, y: 3 }, sauceSides: ['fries'],
+      foods: ['hero', 'pickup', 'fries', 'sauce', 'sandwich'],
+      dividers: [{ x: 1, y: 2 }, { x: 1, y: 3 }],
+      instruction: ['旋转长条餐品，绕开深色隔板。', '冰饮归杯位，不能挨着热汉堡。', '薯条和蘸酱要贴边。'],
+      hint: '隔板旁边留着一条窄道，看看能放什么。',
+      solution: [['pickup', 3, 3], ['hero', 0, 0], ['sandwich', 2, 1, true], ['fries', 2, 0, true], ['sauce', 3, 1]]
+    },
+    {
+      title: '一格余量', size: 4, rotate: true, heat: true, cup: { x: 1, y: 2 }, sauceSides: ['fries'],
+      foods: ['hero', 'pickup', 'fries', 'sauce', 'sandwich'],
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 3 }],
+      instruction: ['旋转餐品绕开隔板，最后只空一格。', '冰饮归杯位，不能挨着热汉堡。', '薯条和蘸酱要贴边。'],
+      hint: '杯位在中间。先给热汉堡和长条三明治找位置。',
+      solution: [['pickup', 1, 2], ['hero', 2, 0], ['sandwich', 0, 1, true], ['fries', 2, 2, true], ['sauce', 2, 3]]
+    },
+    {
+      title: '双拼满盒', size: 4, rotate: true, heat: true, cup: { x: 0, y: 0 }, sauceSides: ['fries', 'rings'],
+      foods: ['hero', 'pickup', 'fries', 'rings', 'sauce', 'sandwich'],
+      dividers: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 2, y: 1 }],
+      instruction: ['旋转餐品绕开隔板，填满可用格。', '冰饮归杯位，不能挨着热汉堡。', '薯条和洋葱圈都要与蘸酱贴边。'],
+      hint: '找一格能同时挨着薯条和洋葱圈的位置。',
+      solution: [['pickup', 0, 0], ['hero', 1, 2], ['sandwich', 3, 1, true], ['fries', 1, 0], ['rings', 0, 2, true], ['sauce', 0, 1]]
     }
   ];
   const cues = {
@@ -65,8 +89,7 @@
     cup: '冰饮只能放进画圆的杯位。',
     reserved: '这个位置留给冰饮。',
     lift: '从餐盒取出了这件餐品。',
-    divider: '这里有隔板，餐品需要绕开。',
-    pair: '薯条和蘸酱要上下或左右挨着。'
+    divider: '这里有隔板，餐品需要绕开。'
   };
   const finishText = '全部订单已装好！';
 
@@ -151,10 +174,16 @@
     const hot = key === 'hero' ? position : placed.get('hero');
     const cold = key === 'pickup' ? position : placed.get('pickup') || reserve;
     if (level.heat && hot && cold && touchesCell('hero', hot, cold)) return cues.heat;
-    if (level.pairSauce && (key === 'fries' || key === 'sauce')) {
-      const fries = key === 'fries' ? position : placed.get('fries');
+    if (level.sauceSides && (key === 'sauce' || level.sauceSides.includes(key))) {
       const sauce = key === 'sauce' ? position : placed.get('sauce');
-      if (fries && sauce && !touchesCell('fries', fries, sauce)) return cues.pair;
+      if (sauce) {
+        for (const sideKey of level.sauceSides) {
+          const side = key === sideKey ? position : placed.get(sideKey);
+          if (side && !touchesCell(sideKey, side, sauce)) {
+            return items[sideKey].label + '和蘸酱要上下或左右挨着。';
+          }
+        }
+      }
     }
     return '';
   }
@@ -235,11 +264,13 @@
     const inner = box(board.x + 10, board.y + 10, board.w - 20, board.h - 20);
     const trayY = 574 + extra * .70;
     const actionY = board.y + board.h + 18;
-    const tileWidth = level.foods.length === 5 ? 64 : level.foods.length === 4 ? 78 : 91;
-    const gap = level.foods.length === 5 ? 5 : 8;
-    const rowWidth = level.foods.length * tileWidth + (level.foods.length - 1) * gap;
+    const foodCount = level.foods.length;
+    const tileWidth = [91, 78, 64, 55][foodCount - 3];
+    const gap = foodCount === 6 ? 4 : foodCount === 5 ? 5 : 8;
+    const rowWidth = foodCount * tileWidth + (foodCount - 1) * gap;
+    const longReceipt = level.instruction.length > 2;
     return {
-      header: 26, receipt: box(26, 105 + extra * .13, 338, 89),
+      header: 26, receipt: box(26, (longReceipt ? 98 : 105) + extra * .13, 338, longReceipt ? 104 : 89),
       board, inner, unit: inner.w / level.size,
       status: box(26, actionY, 338, 39),
       alternate: box(26, actionY, 156, 44),
@@ -562,7 +593,9 @@
     label(currentLevel().title, r.x + 15, r.y + 20, 19, colors.ink, 800);
     label('已装 ' + placed.size + '/' + currentLevel().foods.length, r.x + r.w - 15, r.y + 20, 14, colors.green, 700, 'right');
     rule(r.x + 15, r.x + r.w - 15, r.y + 38, '#c7a77b');
-    currentLevel().instruction.forEach((line, i) => label(line, r.x + 15, r.y + 54 + i * 19, 15, colors.subtle, 650));
+    const lines = currentLevel().instruction;
+    const lineStep = lines.length > 2 ? 17 : 19;
+    lines.forEach((line, i) => label(line, r.x + 15, r.y + 54 + i * lineStep, 15, colors.subtle, 650));
   }
 
   function drawFoodOnBoard(key, x, y, w, h, { alpha = 1, emphasized = false, rotated = false } = {}) {
@@ -649,9 +682,12 @@
   function drawTray(g) {
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
-    const paired = level.pairSauce && placed.has('fries') && placed.has('sauce');
+    const sides = level.sauceSides || [];
+    const pairCount = placed.has('sauce') ? sides.filter(key => placed.has(key)).length : 0;
+    const paired = sides.length > 0 && pairCount === sides.length;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
-    if (level.pairSauce) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
+    if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
+    if (sides.length > 1) trayHint = '蘸酱搭配 ' + pairCount + '/' + sides.length;
     label(trayHint, width - 27, g.foodLabelY, 13, paired ? colors.green : colors.subtle, 650, 'right');
     for (const card of g.tray) {
       const { x, y, w, h, key } = card;
