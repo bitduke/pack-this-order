@@ -43,7 +43,7 @@
     }
   ];
   const cues = {
-    ready: '拖动餐品，或轻点选中后再点餐盒。',
+    ready: '拖动餐品，或点选餐品试摆。',
     noRoom: '超出餐盒了，往里挪一格。',
     overlap: '这里已经有餐品了。',
     heat: '热汉堡和冰饮不能挨边。',
@@ -56,6 +56,7 @@
   let levelIndex = 0;
   let placed = new Map();
   let selected = null;
+  let tapPreview = null;
   let held = null;
   let keyboardCell = null;
   let feedback = { text: cues.ready, tone: '' };
@@ -80,7 +81,7 @@
   live.setAttribute('aria-live', 'polite');
   live.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;' +
     'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);';
-  canvas.setAttribute('aria-label', '这单怎么装？用触屏拖动餐品，或按数字键选餐品，方向键定位，回车摆放。');
+  canvas.setAttribute('aria-label', '这单怎么装？拖动餐品入盒，或点选餐品查看预览。键盘可按数字选餐品、用方向键移动、按回车预览或确认。');
   document.body.append(live);
 
   function currentLevel() { return levels[levelIndex]; }
@@ -130,9 +131,12 @@
     feedback = { text, tone };
     live.textContent = text;
   }
+  function isMultiCell(key) { return items[key].w * items[key].h > 1; }
+
   function pick(key) {
     selected = key;
-    say('已选' + items[key].label + '，点餐盒里的左上落点。');
+    tapPreview = null;
+    say('已选' + items[key].label + (isMultiCell(key) ? '。点想覆盖的一格，先看预览。' : '。点餐盒里要放的位置。'));
     sound('select');
   }
   function put(key, position) {
@@ -144,6 +148,7 @@
     }
     placed.set(key, position);
     selected = null;
+    tapPreview = null;
     lastPiece = key;
     placedAt = performance.now();
     if (placed.size === currentLevel().foods.length) {
@@ -160,6 +165,7 @@
   function remove(key) {
     if (!placed.delete(key)) return;
     selected = key;
+    tapPreview = null;
     say(cues.lift);
     sound('select');
   }
@@ -169,6 +175,7 @@
     placed = new Map();
     held = null;
     selected = null;
+    tapPreview = null;
     keyboardCell = null;
     lastPiece = null;
     autoplayAt = performance.now();
@@ -178,16 +185,19 @@
   function geometry() {
     const extra = height - 720;
     const level = currentLevel();
-    const board = box(boardX, 218 + extra * .30, boardSize, boardSize);
+    const board = box(boardX, 210 + extra * .30, boardSize, boardSize);
     const inner = box(board.x + 10, board.y + 10, board.w - 20, board.h - 20);
-    const trayY = 572 + extra * .70;
+    const trayY = 574 + extra * .70;
+    const actionY = board.y + board.h + 18;
     const tileWidth = level.foods.length === 5 ? 64 : level.foods.length === 4 ? 78 : 91;
     const gap = level.foods.length === 5 ? 5 : 8;
     const rowWidth = level.foods.length * tileWidth + (level.foods.length - 1) * gap;
     return {
       header: 26, receipt: box(26, 105 + extra * .13, 338, 89),
       board, inner, unit: inner.w / level.size,
-      status: box(26, board.y + board.h + 18, 338, 33),
+      status: box(26, actionY, 338, 39),
+      alternate: box(26, actionY, 156, 44),
+      confirm: box(208, actionY, 156, 44),
       foodLabelY: trayY - 14, trayY,
       tray: level.foods.map((key, i) => ({
         key, ...box((width - rowWidth) / 2 + i * (tileWidth + gap), trayY, tileWidth, 76)
@@ -204,9 +214,70 @@
     if (!inside(point, g.inner)) return null;
     return { x: Math.floor((point.x - g.inner.x) / g.unit), y: Math.floor((point.y - g.inner.y) / g.unit) };
   }
-  function targetFor(point, g) {
-    const cell = gridCell(point, g);
-    return cell && held ? { x: cell.x - held.grabX, y: cell.y - held.grabY } : cell;
+  function itemCenter(key, position, g) {
+    const { w, h } = items[key];
+    return {
+      x: g.inner.x + (position.x + w / 2) * g.unit,
+      y: g.inner.y + (position.y + h / 2) * g.unit
+    };
+  }
+  function cellCenter(cell, g) {
+    return { x: g.inner.x + (cell.x + .5) * g.unit, y: g.inner.y + (cell.y + .5) * g.unit };
+  }
+  function dragTarget(point, g, drag) {
+    if (!inside(point, g.board)) return null;
+    const size = currentLevel().size;
+    const { w, h } = items[drag.key];
+    return {
+      x: Math.min(size - w, Math.max(0, Math.round((point.x - g.inner.x) / g.unit - drag.grabX))),
+      y: Math.min(size - h, Math.max(0, Math.round((point.y - g.inner.y) / g.unit - drag.grabY)))
+    };
+  }
+  function makeTapPreview(key, cell, point, g) {
+    const size = currentLevel().size;
+    const { w, h } = items[key];
+    const choices = [];
+    for (let y = Math.max(0, cell.y - h + 1); y <= Math.min(cell.y, size - h); y++) {
+      for (let x = Math.max(0, cell.x - w + 1); x <= Math.min(cell.x, size - w); x++) {
+        const position = { x, y };
+        const center = itemCenter(key, position, g);
+        choices.push({
+          position,
+          distance: (center.x - point.x) ** 2 + (center.y - point.y) ** 2,
+          error: checkPlacement(key, position)
+        });
+      }
+    }
+    choices.sort((a, b) => a.distance - b.distance);
+    const available = choices.filter(choice => !choice.error);
+    tapPreview = { key, choices: available.length ? available : [choices[0]], index: 0 };
+    announcePreview();
+  }
+  function announcePreview() {
+    const { key, index, choices } = tapPreview;
+    const { position, error } = choices[index];
+    if (error) {
+      say(error, 'error');
+      return;
+    }
+    const { w, h } = items[key];
+    say(items[key].label + '预览占 ' + w * h + ' 格，从第 ' + (position.y + 1) + ' 行第 ' + (position.x + 1) + ' 格起。' +
+      (choices.length > 1 ? '可以换个位置，或确认放下。' : '确认后放入餐盒。'));
+  }
+  function getPlacementPreview(g) {
+    if (held?.active) {
+      const position = dragTarget(held.point, g, held);
+      return position && { key: held.key, position, error: checkPlacement(held.key, position), mode: 'drag' };
+    }
+    if (!tapPreview) return null;
+    const { key, choices, index } = tapPreview;
+    const { position, error } = choices[index];
+    return { key, position, error, mode: 'tap', alternatives: choices.length };
+  }
+  function confirmPreview() {
+    const { key, choices, index } = tapPreview;
+    const { position, error } = choices[index];
+    if (!error) put(key, position);
   }
 
   function round(x, y, w, h, radius, fill, stroke, lineWidth = 1) {
@@ -421,7 +492,7 @@
     sprite(key, x + w / 2, y + h / 2, icon);
     ctx.restore();
   }
-  function drawBoard(g, now) {
+  function drawBoard(g, now, preview) {
     const r = g.board;
     const level = currentLevel();
     round(r.x - 5, r.y + 6, r.w + 10, r.h + 4, 22, '#b3875a');
@@ -455,24 +526,21 @@
       drawFoodOnBoard(key, origin.x + pos.x * unit + 3, origin.y + pos.y * unit + 3 - Math.sin(bounce * Math.PI) * 3,
         item.w * unit - 6, item.h * unit - 7, dragged ? .25 : 1, selected === key && !dragged);
     }
-    if (!held?.active && keyboardCell && phase === 'playing') {
+    if (!preview && !held?.active && keyboardCell && phase === 'playing') {
       round(origin.x + keyboardCell.x * unit + 4, origin.y + keyboardCell.y * unit + 4, unit - 8, unit - 8, 8, null, colors.red, 2);
     }
-    if (!held?.active) return;
-    const drop = targetFor(held.point, g);
-    if (!drop) return;
-    const error = checkPlacement(held.key, drop);
-    const item = items[held.key];
-    ctx.save();
-    round(origin.x, origin.y, origin.w, origin.h, 14);
-    ctx.clip();
-    const x = origin.x + drop.x * unit + 3;
-    const y = origin.y + drop.y * unit + 3;
-    const w = item.w * unit - 6;
-    const h = item.h * unit - 6;
-    if (!error) drawFoodOnBoard(held.key, x, y, w, h, .66);
-    round(x, y, w, h, 9, error ? '#c5453337' : null, error ? colors.red : colors.green, 2.6);
-    ctx.restore();
+    if (!preview) return;
+    const { key, position, error } = preview;
+    const { w, h } = items[key];
+    const x = origin.x + position.x * unit;
+    const y = origin.y + position.y * unit;
+    drawFoodOnBoard(key, x + 3, y + 3, w * unit - 6, h * unit - 7, .68);
+    for (let row = 0; row < h; row++) {
+      for (let column = 0; column < w; column++) {
+        round(x + column * unit + 3, y + row * unit + 3, unit - 6, unit - 6, 8,
+          error ? '#b8353147' : '#79ad5947', error ? colors.red : colors.green, 2.5);
+      }
+    }
   }
 
   function drawShape(item, x, y) {
@@ -510,13 +578,23 @@
     }
   }
 
-  function drawFeedback(g) {
+  function drawFeedback(g, preview) {
     const r = g.status;
-    const drop = held?.active ? targetFor(held.point, g) : null;
-    const error = drop ? checkPlacement(held.key, drop) : '';
+    if (preview?.mode === 'tap' && !preview.error) {
+      if (preview.alternatives > 1) {
+        const a = g.alternate;
+        round(a.x, a.y, a.w, 38, 10, colors.paper, '#bb9b6d');
+        label('换个位置', a.x + a.w / 2, a.y + 19, 16, colors.ink, 750, 'center');
+      } else {
+        const { w, h } = items[preview.key];
+        label('将占用 ' + w * h + ' 格', g.alternate.x + g.alternate.w / 2, r.y + 19, 15, colors.green, 750, 'center');
+      }
+      button({ ...g.confirm, h: 38 }, '放这里', colors.green, '#244632');
+      return;
+    }
     const current = held?.active ? {
-      text: drop ? (error || '松手放在这里。') : '把餐品拖到盒子里。',
-      tone: error ? 'error' : drop ? 'success' : ''
+      text: preview ? (preview.error || '松手放在这里。') : '把餐品拖到盒子里。',
+      tone: preview?.error ? 'error' : preview ? 'success' : ''
     } : feedback;
     const fill = current.tone === 'error' ? '#f7d9c8' : current.tone === 'success' ? colors.mint : colors.tan;
     const ink = current.tone === 'error' ? colors.red : current.tone === 'success' ? colors.green : colors.subtle;
@@ -556,11 +634,12 @@
     if (phase === 'title') {
       drawTitle(g);
     } else {
+      const preview = getPlacementPreview(g);
       drawHeader(g);
-      drawBoard(g, now);
-      drawFeedback(g);
+      drawBoard(g, now, preview);
+      drawFeedback(g, preview);
       drawTray(g);
-      if (held?.active && !gridCell(held.point, g)) {
+      if (held?.active && !preview) {
         sprite(held.key, held.point.x, held.point.y - 26, 63);
       }
       if (phase !== 'playing') drawComplete(g, now);
@@ -627,6 +706,17 @@
       remove(selected);
       return;
     }
+    if (tapPreview && !tapPreview.choices[tapPreview.index].error) {
+      if (inside(at, g.confirm)) {
+        confirmPreview();
+        return;
+      }
+      if (tapPreview.choices.length > 1 && inside(at, g.alternate)) {
+        tapPreview.index = (tapPreview.index + 1) % tapPreview.choices.length;
+        announcePreview();
+        return;
+      }
+    }
     const food = g.tray.find(card => inside(at, card));
     if (food) {
       pick(food.key);
@@ -634,12 +724,16 @@
     }
     const cell = gridCell(at, g);
     if (!cell) return;
-    interactWithCell(cell);
+    interactWithCell(cell, at, g);
   }
-  function interactWithCell(cell) {
+  function interactWithCell(cell, at, g) {
+    if (selected) {
+      if (isMultiCell(selected)) makeTapPreview(selected, cell, at, g);
+      else put(selected, cell);
+      return;
+    }
     const piece = occupant(cell);
-    if (piece && (!selected || selected === piece)) pick(piece);
-    else if (selected) put(selected, cell);
+    if (piece) pick(piece);
     else say(currentLevel().hint);
   }
   function advance() {
@@ -658,8 +752,8 @@
     const position = key && !card ? placed.get(key) : null;
     held = {
       id: event.pointerId, point: at, start: at, key, active: false,
-      grabX: position ? cell.x - position.x : 0,
-      grabY: position ? cell.y - position.y : 0
+      grabX: position ? (at.x - g.inner.x) / g.unit - position.x : (items[key]?.w || 0) / 2,
+      grabY: position ? (at.y - g.inner.y) / g.unit - position.y : (items[key]?.h || 0) / 2
     };
     canvas.setPointerCapture(event.pointerId);
   });
@@ -668,7 +762,7 @@
     held.point = point(event);
     if (held.key && !held.active && Math.hypot(held.point.x - held.start.x, held.point.y - held.start.y) >= 7) {
       held.active = true;
-      selected = held.key;
+      pick(held.key);
     }
   });
   canvas.addEventListener('pointerup', event => {
@@ -676,9 +770,9 @@
     const at = point(event);
     const g = geometry();
     const drag = held;
-    const drop = targetFor(at, g);
     held = null;
     if (drag.active) {
+      const drop = dragTarget(at, g, drag);
       if (drop) put(drag.key, drop);
       else if (at.y >= g.foodLabelY && at.y <= g.trayY + 76 && placed.has(drag.key)) remove(drag.key);
       else say('没放进餐盒，再摆一次。');
@@ -697,7 +791,11 @@
       event.preventDefault();
       if (phase === 'title') start(0);
       else if (phase !== 'playing') advance();
-      else if (keyboardCell) interactWithCell(keyboardCell);
+      else if (tapPreview) confirmPreview();
+      else if (keyboardCell) {
+        const g = geometry();
+        interactWithCell(keyboardCell, cellCenter(keyboardCell, g), g);
+      }
       return;
     }
     if (phase !== 'playing') return;
@@ -715,8 +813,13 @@
       const [dx, dy] = directions[event.key];
       keyboardCell.x = Math.min(level.size - 1, Math.max(0, keyboardCell.x + dx));
       keyboardCell.y = Math.min(level.size - 1, Math.max(0, keyboardCell.y + dy));
+      if (selected && isMultiCell(selected)) {
+        const g = geometry();
+        makeTapPreview(selected, keyboardCell, cellCenter(keyboardCell, g), g);
+      }
     } else if (event.key === 'Escape') {
       selected = null;
+      tapPreview = null;
       say(cues.ready);
     }
   });
@@ -740,6 +843,7 @@
   window.__gameState = () => ({
     phase: phase === 'order-complete' ? 'playing' : phase,
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
+    preview: getPlacementPreview(geometry()),
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
   });
@@ -754,8 +858,17 @@
       advance();
       return;
     }
+    if (tapPreview) {
+      confirmPreview();
+      return;
+    }
     const step = currentLevel().solution.find(([key]) => !placed.has(key));
-    if (step) put(step[0], { x: step[1], y: step[2] });
+    if (!step) return;
+    const [key, x, y] = step;
+    const g = geometry();
+    const at = itemCenter(key, { x, y }, g);
+    pick(key);
+    interactWithCell(gridCell(at, g), at, g);
   };
 
   resize();
