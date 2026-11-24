@@ -110,6 +110,30 @@
       instruction: ['主食二选一，冰饮进杯位。', '热汉堡别挨冰饮，蘸酱放在中间。', '薯条、蘸酱、洋葱圈要排成直线。'],
       hint: '把两份小食放在酱盒的左和右，或上和下。',
       solution: [['pickup', 3, 2], ['hero', 0, 2], ['fries', 2, 1, true], ['rings', 2, 3], ['sauce', 2, 2]]
+    },
+    {
+      guest: '周叔', title: '主食靠右', cup: { x: 2, y: 3 }, mainRight: true,
+      sauceSides: ['fries'], sauceApart: ['rings'],
+      dividers: [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 3, y: 2 }],
+      instruction: ['主食二选一，只放在餐盒右半边。', '薯条贴酱，洋葱圈和酱分开。', '冰饮归杯位，别挨着热汉堡。'],
+      hint: '右边只有两列，试试把三明治转成竖放。',
+      solution: [['pickup', 2, 3], ['hero', 2, 0], ['fries', 1, 2], ['rings', 0, 0], ['sauce', 2, 2]]
+    },
+    {
+      guest: '小夏', title: '三样共蘸', cup: { x: 1, y: 0 }, sauceSides: ['fries', 'rings'], mainDips: true,
+      dividers: [{ x: 3, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 3 }],
+      instruction: ['主食二选一，冰饮进杯位。', '主食、薯条、洋葱圈都要贴蘸酱。', '热汉堡和冰饮分开。'],
+      hint: '给蘸酱找一个至少有三条空边的位置。',
+      solution: [['pickup', 1, 0], ['hero', 0, 2], ['fries', 0, 0], ['rings', 2, 0, true], ['sauce', 1, 1]]
+    },
+    {
+      guest: '陈姐', title: '定位蘸酱', cup: { x: 2, y: 3 }, sauceSlot: { x: 2, y: 2 },
+      sauceSides: ['fries', 'rings'], mainDips: true,
+      sauceEdges: { fries: { x: -1, y: 0, label: '左边' }, rings: { x: 1, y: 0, label: '右边' } },
+      dividers: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 }],
+      instruction: ['冰饮归杯位，别挨着热汉堡。', '主食二选一并贴酱，蘸酱归酱位。', '薯条贴酱左边，洋葱圈贴酱右边。'],
+      hint: '杯位在酱下边，留出上边给主食。',
+      solution: [['pickup', 2, 3], ['hero', 2, 0], ['fries', 1, 1], ['rings', 3, 2, true], ['sauce', 2, 2]]
     }
   ].map(order => ({
     size: 4, rotate: true, heat: true, mainChoices: ['hero', 'sandwich'],
@@ -125,7 +149,10 @@
     reserved: '这个位置留给冰饮。',
     lift: '从餐盒取出了这件餐品。',
     divider: '这里有隔板，餐品需要绕开。',
-    main: '主食二选一，要换就先取出已装主食。'
+    main: '主食二选一，要换就先取出已装主食。',
+    mainRight: '主食的所有占格都要在右半边。',
+    sauceSlot: '蘸酱只能放进标出的酱位。',
+    reservedSauce: '这个位置留给蘸酱。'
   };
   const finishText = '全部订单已装好！';
   const edgeSteps = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -206,13 +233,21 @@
   function checkSaucePlacement(level, key, position) {
     const sides = level.sauceSides;
     const apart = level.sauceApart || [];
-    if (!sides || (key !== 'sauce' && !sides.includes(key) && !apart.includes(key))) return '';
+    const isDippingMain = level.mainDips && level.mainChoices.includes(key);
+    if (!sides || (key !== 'sauce' && !sides.includes(key) && !apart.includes(key) && !isDippingMain)) return '';
     const locationOf = target => target === key ? position : placed.get(target);
     const sauce = locationOf('sauce');
     if (!sauce) return '';
     for (const sideKey of sides) {
       const side = locationOf(sideKey);
-      if (side && !touchesCell(sideKey, side, sauce)) return items[sideKey].label + '和蘸酱要上下或左右挨着。';
+      if (!side) continue;
+      const edge = level.sauceEdges?.[sideKey];
+      const touches = edge
+        ? covers(sideKey, side, sauce.x + edge.x, sauce.y + edge.y)
+        : touchesCell(sideKey, side, sauce);
+      if (!touches) {
+        return items[sideKey].label + (edge ? '要贴蘸酱的' + edge.label + '。' : '和蘸酱要上下或左右挨着。');
+      }
     }
     for (const sideKey of apart) {
       const side = locationOf(sideKey);
@@ -228,18 +263,28 @@
       );
       if (first && second && !across) return '蘸酱要夹在两份小食之间，排成直线。';
     }
+    if (level.mainDips) {
+      const mainKey = isDippingMain ? key : packedMain();
+      const main = locationOf(mainKey);
+      if (main && !touchesCell(mainKey, main, sauce)) return items[mainKey].label + '也要贴蘸酱。';
+    }
     return '';
   }
   function checkPlacement(key, position) {
     const level = currentLevel();
     const main = packedMain();
-    if (main && key !== main && level.mainChoices.includes(key)) return cues.main;
+    const isMain = level.mainChoices?.includes(key);
+    if (main && key !== main && isMain) return cues.main;
     const { x, y } = position;
     const item = dimensions(key, position.rotated);
     const reserve = level.cup;
+    const sauceSlot = level.sauceSlot;
     if (x < 0 || y < 0 || x + item.w > level.size || y + item.h > level.size) return cues.noRoom;
+    if (level.mainRight && isMain && x < Math.ceil(level.size / 2)) return cues.mainRight;
     if (reserve && key === 'pickup' && (x !== reserve.x || y !== reserve.y)) return cues.cup;
     if (reserve && key !== 'pickup' && covers(key, position, reserve.x, reserve.y)) return cues.reserved;
+    if (sauceSlot && key === 'sauce' && (x !== sauceSlot.x || y !== sauceSlot.y)) return cues.sauceSlot;
+    if (sauceSlot && key !== 'sauce' && covers(key, position, sauceSlot.x, sauceSlot.y)) return cues.reservedSauce;
     if (level.dividers?.some(cell => covers(key, position, cell.x, cell.y))) return cues.divider;
     for (const [other, otherPos] of placed) {
       if (other !== key && coversSameCell(key, position, other, otherPos)) return cues.overlap;
@@ -714,6 +759,7 @@
     for (let y = 0; y < level.size; y++) {
       for (let x = 0; x < level.size; x++) {
         const isCup = level.cup && x === level.cup.x && y === level.cup.y;
+        const isSauceSlot = level.sauceSlot && x === level.sauceSlot.x && y === level.sauceSlot.y;
         const px = origin.x + x * unit;
         const py = origin.y + y * unit;
         if (level.dividers?.some(cell => cell.x === x && cell.y === y)) {
@@ -723,19 +769,28 @@
           path([[px + 26, py + unit - 13], [px + unit - 13, py + 26]], null, '#b88768', 1.5);
           continue;
         }
-        round(px + 2, py + 2, unit - 4, unit - 4, 9, isCup ? colors.paleBlue : '#f5dfb3');
-        if (isCup && !placed.has('pickup')) {
+        const base = level.mainRight && x >= Math.ceil(level.size / 2) ? '#ecd097' : '#f5dfb3';
+        round(px + 2, py + 2, unit - 4, unit - 4, 9, isCup ? colors.paleBlue : isSauceSlot ? '#f6cabb' : base);
+        const reservedFor = isCup ? 'pickup' : isSauceSlot ? 'sauce' : null;
+        if (reservedFor && !placed.has(reservedFor)) {
           const cx = px + unit / 2;
           const cy = py + unit / 2;
           ctx.save();
           ctx.setLineDash([3, 3]);
-          ellipse(cx, cy, unit * .30, unit * .30, null, '#4a8c9e', 2);
+          ellipse(cx, cy, unit * .30, unit * .30, null, isCup ? '#4a8c9e' : '#b7594d', 2);
           ctx.restore();
-          label('杯位', cx, cy, 13, colors.blue, 750, 'center');
-        } else if (!isCup) {
+          label(isCup ? '杯位' : '酱位', cx, cy, 13, isCup ? colors.blue : colors.red, 750, 'center');
+        } else if (!reservedFor) {
           ellipse(px + unit / 2, py + unit / 2, 1.4, 1.4, '#d7b589');
         }
       }
+    }
+    if (level.mainRight) {
+      const boundary = origin.x + Math.ceil(level.size / 2) * unit;
+      ctx.save();
+      ctx.setLineDash([5, 5]);
+      path([[boundary, origin.y + 4], [boundary, origin.y + origin.h - 4]], null, '#f8e8bb', 2.5);
+      ctx.restore();
     }
     for (const [key, pos] of placed) {
       const item = dimensions(key, pos.rotated);
@@ -777,18 +832,19 @@
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
     const sides = level.sauceSides || [];
+    const main = packedMain();
     const pairRules = [...sides, ...(level.sauceApart || [])];
-    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite));
+    const pairTarget = pairRules.length + Number(Boolean(level.sauceOpposite)) + Number(Boolean(level.mainDips));
     let pairCount = 0;
     if (placed.has('sauce')) {
       pairCount = pairRules.filter(key => placed.has(key)).length;
       if (level.sauceOpposite && sides.every(key => placed.has(key))) pairCount++;
+      if (level.mainDips && main) pairCount++;
     }
     const paired = pairTarget > 0 && pairCount === pairTarget;
     let trayHint = level.cup ? '冰饮先找杯位' : '可随时调整摆放';
     if (sides.length === 1) trayHint = paired ? '薯条和蘸酱已贴边' : '薯条和蘸酱要贴边';
     if (sides.length > 1) trayHint = '蘸酱搭配 ' + pairCount + '/' + sides.length;
-    const main = packedMain();
     if (level.mainChoices) trayHint = '主食 ' + Number(Boolean(main)) + '/1  ·  搭配 ' + pairCount + '/' + pairTarget;
     const trayReady = paired && (!level.mainChoices || main);
     label(trayHint, width - 27, g.foodLabelY, 13, trayReady ? colors.green : colors.subtle, 650, 'right');
