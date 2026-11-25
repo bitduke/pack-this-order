@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const canvas = document.getElementById('game');
+  const canvas = (typeof document !== 'undefined' && document.getElementById && document.getElementById('game')) || (typeof window !== 'undefined' && window.__canvas) || (typeof wx !== 'undefined' && wx.createCanvas ? wx.createCanvas() : null);
   const screen = canvas.getContext('2d');
   let ctx = screen;
   const width = 390;
@@ -240,9 +240,72 @@
   const finishText = '全部订单已装好！';
   const edgeSteps = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
+  const customerStories = {
+    '小林': { role: '大学生', quote: '“薯条趁热蘸番茄酱，复习周全靠这口了！”' },
+    '阿岚': { role: '插画师', quote: '“我的洋葱圈要保持酥脆，千万别沾到酱汁哦～”' },
+    '阿远': { role: '程序员', quote: '“一份蘸酱同时蘸薯条和洋葱圈，效率拉满！”' },
+    '唐姐': { role: '花店店主', quote: '“两边各一份小食排成线，整整齐齐看着舒心。”' },
+    '周叔': { role: '出租司机', quote: '“主食靠右放拿得顺手，吃完继续跑下一趟车！”' },
+    '小夏': { role: '高中生', quote: '“主食、薯条、洋葱圈都能蘸到酱，绝妙大满贯！”' },
+    '陈姐': { role: '会计主管', quote: '“蘸酱正中定位，左边薯条右边圈，分毫不差。”' },
+    '许姐': { role: '社区医生', quote: '“冬天加碗热腾腾的汤，暖身又贴心，离冰饮远点。”' },
+    '阿澈': { role: '骑行达人', quote: '“刚出锅的热汤一定要贴着主食，保温更持久！”' },
+    '敏姐': { role: '烘焙师', quote: '“等汤熬够火候再入盒，慢慢装，不急在一时。”' },
+    '邵姨': { role: '退休教师', quote: '“给热汤留好挨着主食的边，摆得扎实不撒漏。”' },
+    '孟叔': { role: '象棋教练', quote: '“先走汤再落酱，步步为营，这盘打包漂亮！”' },
+    '罗姐': { role: '咖啡店长', quote: '“双加餐分先后，酱位和贴边方向也要严谨。”' },
+    '阿梅': { role: '舞蹈老师', quote: '“后到的洋葱圈要挨着薯条，双重酥脆出击！”' },
+    '阿泽': { role: '网球教练', quote: '“运动完来份热食，冰饮最后送到，清凉收尾。”' },
+    '倩姐': { role: '建筑设计师', quote: '“左右护法小食到位，对称与平衡的打包美学。”' }
+  };
+
+  const STORAGE_KEY = 'pack_this_order_v2';
+  function getStorageItem(key) {
+    try {
+      if (typeof wx !== 'undefined' && wx.getStorageSync) return wx.getStorageSync(key);
+      if (typeof localStorage !== 'undefined') return localStorage.getItem(key);
+    } catch (_) {}
+    return null;
+  }
+  function setStorageItem(key, val) {
+    try {
+      if (typeof wx !== 'undefined' && wx.setStorageSync) { wx.setStorageSync(key, val); return; }
+      if (typeof localStorage !== 'undefined') { localStorage.setItem(key, val); return; }
+    } catch (_) {}
+  }
+  function loadSave() {
+    const raw = getStorageItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const d = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (d && typeof d === 'object') return d;
+      } catch (_) {}
+    }
+    return { stars: {}, coins: 0, dailyDate: '', streak: 0 };
+  }
+  const saveState = loadSave();
+  function saveGame() {
+    setStorageItem(STORAGE_KEY, JSON.stringify(saveState));
+  }
+  function getTotalStars() {
+    return Object.values(saveState.stars || {}).reduce((a, b) => a + (Number(b) || 0), 0);
+  }
+  function getTotalCoins() {
+    return Number(saveState.coins) || 0;
+  }
+
   let phase = 'title';
   let levelIndex = 0;
   let customMode = false;
+  let isDailyMode = false;
+  let albumIndex = 0;
+  let wrongAttempts = 0;
+  let lastEarnedStars = 1;
+  let lastTipEarned = 15;
+  let activeHint = null;
+  let claimedTriple = false;
+  let clearedCountSinceAd = 0;
+  const rewardMultiplier = (typeof window !== 'undefined' && window.GAME?.wxConfig?.rewardMultiplier) || 3;
   const servedMains = customOrders.map(() => new Set());
   let arrivedFoods = new Set();
   let placed = new Map();
@@ -268,13 +331,18 @@
   let viewWidth = 390;
   let viewHeight = 720;
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const live = document.createElement('div');
-  live.setAttribute('aria-live', 'polite');
-  live.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;' +
-    'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);';
-  canvas.setAttribute('aria-label', '这单怎么装？首页回车开打，按 2 试自选套餐。游戏中可用数字选餐品、方向键移动、回车确认，按 R 旋转长条餐品。');
-  document.body.append(live);
+  const reduceMotion = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  const live = typeof document !== 'undefined' && typeof document.createElement === 'function' ? document.createElement('div') : null;
+  if (live) {
+    if (live.setAttribute) live.setAttribute('aria-live', 'polite');
+    if (live.style) live.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;' +
+      'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);';
+    if (document.body) {
+      if (typeof document.body.append === 'function') document.body.append(live);
+      else if (typeof document.body.appendChild === 'function') document.body.appendChild(live);
+    }
+  }
+  if (canvas && canvas.setAttribute) canvas.setAttribute('aria-label', '这单怎么装？首页回车开打，按 2 试自选套餐。游戏中可用数字选餐品、方向键移动、回车确认，按 R 旋转长条餐品。');
 
   function currentOrders() { return customMode ? customOrders : levels; }
   function currentLevel() { return currentOrders()[levelIndex]; }
@@ -442,7 +510,7 @@
   }
   function say(text, tone = '') {
     feedback = { text, tone };
-    live.textContent = text;
+    if (live) live.textContent = text;
   }
   function isMultiCell(key) { return items[key].w * items[key].h > 1; }
 
@@ -465,14 +533,48 @@
     say('已选' + items[key].label + (isMultiCell(key) ? '。点想覆盖的一格，先看预览。' : '。点餐盒里要放的位置。'));
     sound('select');
   }
+  function recordCompletion() {
+    const levelKey = (customMode ? 'c_' : 'l_') + levelIndex;
+    let stars = 1;
+    if (wrongAttempts === 0) stars = 2;
+    if (customMode) {
+      if (servedMains[levelIndex].size >= (currentLevel().mainChoices?.length || 2)) stars = 3;
+    } else {
+      if (wrongAttempts === 0) stars = 3;
+    }
+    lastEarnedStars = stars;
+    const oldStars = saveState.stars[levelKey] || 0;
+    let tip = 15;
+    if (stars > oldStars) {
+      tip += (stars - oldStars) * 20;
+      saveState.stars[levelKey] = stars;
+    }
+    saveState.coins = (saveState.coins || 0) + tip;
+    lastTipEarned = tip;
+    if (isDailyMode) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (saveState.dailyDate !== todayStr) {
+        saveState.dailyDate = todayStr;
+        saveState.streak = (saveState.streak || 0) + 1;
+        saveState.coins = (saveState.coins || 0) + 50;
+        lastTipEarned += 50;
+      }
+    }
+    saveGame();
+  }
+
   function put(key, position) {
     const error = checkPlacement(key, position);
     if (error) {
+      wrongAttempts++;
       say(error, 'error');
       sound('error');
+      if (typeof window !== 'undefined' && window.GAME?.vibrateShort) window.GAME.vibrateShort('heavy');
       return;
     }
     placed.set(key, position);
+    if (activeHint && activeHint.key === key) activeHint = null;
+    if (typeof window !== 'undefined' && window.GAME?.vibrateShort) window.GAME.vibrateShort('medium');
     const arrivalMessage = releaseLateFoods();
     clearSelection();
     lastPiece = key;
@@ -488,6 +590,7 @@
       } else {
         say(phase === 'won' ? finishText : '打包成功！', 'success');
       }
+      recordCompletion();
       sound('finish');
     } else {
       say(arrivalMessage || items[key].label + '已入盒。', 'success');
@@ -500,11 +603,13 @@
     tapPreview = null;
     say(cues.lift);
     sound('select');
+    if (typeof window !== 'undefined' && window.GAME?.vibrateShort) window.GAME.vibrateShort('light');
   }
   function start(index, isCustom = customMode) {
     phase = 'playing';
     levelIndex = index;
     customMode = isCustom;
+    wrongAttempts = 0;
     arrivedFoods = new Set();
     placed = new Map();
     rotations = new Set();
@@ -513,17 +618,28 @@
     tapPreview = null;
     keyboardCell = null;
     lastPiece = null;
+    activeHint = null;
+    claimedTriple = false;
     autoplayAt = performance.now();
     say(cues.ready);
+    if (typeof window !== 'undefined' && window.GAME?.hideBannerAd) {
+      window.GAME.hideBannerAd();
+    }
   }
   function returnToTitle() {
     phase = 'title';
+    isDailyMode = false;
     held = null;
     placed.clear();
     rotations.clear();
     clearSelection();
     keyboardCell = null;
+    activeHint = null;
+    claimedTriple = false;
     say('开始打包，或试试自选套餐。');
+    if (typeof window !== 'undefined' && window.GAME?.showBannerAd) {
+      window.GAME.showBannerAd();
+    }
   }
 
   function geometry() {
@@ -551,18 +667,26 @@
       tray: level.foods.map((key, i) => ({
         key, ...box((width - rowWidth) / 2 + i * (tileWidth + gap), trayY, tileWidth, 76)
       })),
-      retry: box(26, trayY + 90, 92, 42),
-      rotate: box(143, trayY + 88, 104, 44),
-      takeOut: box(262, trayY + 90, 102, 42),
-      start: box(45, height - 177, 300, 54),
-      customStart: box(45, height - 107, 300, 48),
-      home: box(245, compactReceipt ? 58 : 61, 119, compactReceipt ? 34 : 36),
-      mute: box(315, 16, 55, 44),
-      modal: box(31, height / 2 - 108, 328, customMode ? 254 : 220),
-      advance: box(58, height / 2 + 38, 274, 53),
-      customRetry: box(58, height / 2 + 38, 120, 53),
-      customNext: box(191, height / 2 + 38, 141, 53),
-      customHome: box(115, height / 2 + 96, 160, 44)
+      retry: box(20, trayY + 90, 78, 42),
+      rotate: box(105, trayY + 88, 88, 44),
+      takeOut: box(200, trayY + 90, 78, 42),
+      hintBtn: box(285, trayY + 88, 85, 44),
+      start: box(45, height - 198, 300, 48),
+      customStart: box(45, height - 142, 300, 46),
+      dailyStart: box(45, height - 88, 145, 42),
+      albumBtn: box(200, height - 88, 145, 42),
+      home: box(175, 62, 95, 28),
+      mute: box(196, 31, 72, 28),
+      modal: box(31, height / 2 - (customMode ? 155 : 135), 328, customMode ? 315 : 270),
+      tripleClaim: box(55, height / 2 + (customMode ? 32 : 36), 280, 46),
+      advance: box(55, height / 2 + (customMode ? 84 : 88), 280, 42),
+      customNext: box(55, height / 2 + 84, 280, 42),
+      customRetry: box(55, height / 2 + 132, 134, 38),
+      customHome: box(201, height / 2 + 132, 134, 38),
+      albumPrev: box(45, height - 105, 78, 42),
+      albumPlay: box(133, height - 105, 124, 42),
+      albumNext: box(267, height - 105, 78, 42),
+      albumBack: box(135, height - 54, 120, 38)
     };
   }
   function gridCell(point, g) {
@@ -650,9 +774,25 @@
     sound('select');
   }
 
+  function setDash(dash) {
+    if (typeof ctx.setLineDash === 'function') {
+      try { ctx.setLineDash(dash); } catch (_e) {}
+    }
+  }
+
   function round(x, y, w, h, radius, fill, stroke, lineWidth = 1) {
+    const r = Math.max(0, Math.min(Number(radius) || 0, Math.abs(w) / 2, Math.abs(h) / 2));
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, radius);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
     if (fill) { ctx.fillStyle = fill; ctx.fill(); }
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
   }
@@ -665,7 +805,11 @@
   }
   function ellipse(x, y, rx, ry, fill, stroke, lineWidth = 1) {
     ctx.beginPath();
-    ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(rx, ry);
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.restore();
     if (fill) { ctx.fillStyle = fill; ctx.fill(); }
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
   }
@@ -678,7 +822,7 @@
   }
   function rule(x1, x2, y, fill) {
     ctx.save();
-    ctx.setLineDash([4, 5]);
+    setDash([4, 5]);
     path([[x1, y], [x2, y]], null, fill, 1);
     ctx.restore();
   }
@@ -750,14 +894,24 @@
     rings() {
       ellipse(50, 77, 36, 7, '#3d271629');
       for (const [x, y, sx] of [[33, 56, 1], [64, 53, 1], [52, 42, .92]]) {
-        const ring = new Path2D();
-        ring.ellipse(x, y, 24 * sx, 17 * sx, -.30, 0, Math.PI * 2);
-        ring.ellipse(x, y, 13 * sx, 8.5 * sx, -.30, 0, Math.PI * 2, true);
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-.30);
+        ctx.beginPath();
+        ctx.save();
+        ctx.scale(24 * sx, 17 * sx);
+        ctx.arc(0, 0, 1, 0, Math.PI * 2, false);
+        ctx.restore();
+        ctx.save();
+        ctx.scale(13 * sx, 8.5 * sx);
+        ctx.arc(0, 0, 1, 0, Math.PI * 2, true);
+        ctx.restore();
         ctx.fillStyle = '#dfa24b';
-        ctx.fill(ring, 'evenodd');
+        ctx.fill('evenodd');
         ctx.strokeStyle = '#8f5429';
         ctx.lineWidth = 2.2;
-        ctx.stroke(ring);
+        ctx.stroke();
+        ctx.restore();
         for (const [dx, dy] of [[-15, 1], [-9, -10], [6, -12], [16, 1], [1, 12]]) {
           ellipse(x + dx * sx, y + dy * sx, 1.4, 1.15, '#ffe8a6');
         }
@@ -805,26 +959,46 @@
   };
   const sprites = {};
   for (const [key, paint] of Object.entries(renderArt)) {
-    const art = document.createElement('canvas');
-    art.width = art.height = 256;
-    ctx = art.getContext('2d');
-    ctx.scale(2.56, 2.56);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    paint();
-    sprites[key] = art;
+    try {
+      const art = document.createElement('canvas');
+      art.width = art.height = 256;
+      ctx = art.getContext('2d');
+      ctx.scale(2.56, 2.56);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      paint();
+      sprites[key] = art;
+    } catch (_e) {
+      sprites[key] = null;
+    }
   }
   ctx = screen;
+
   function sprite(key, x, y, size, rotated = false) {
-    if (!rotated) {
-      ctx.drawImage(sprites[key], x - size / 2, y - size / 2, size, size);
+    if (renderArt[key]) {
+      ctx.save();
+      ctx.translate(x, y);
+      if (rotated) ctx.rotate(Math.PI / 2);
+      const s = size / 100;
+      ctx.scale(s, s);
+      ctx.translate(-50, -50);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      renderArt[key]();
+      ctx.restore();
       return;
     }
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(Math.PI / 2);
-    ctx.drawImage(sprites[key], -size / 2, -size / 2, size, size);
-    ctx.restore();
+    if (sprites[key]) {
+      if (!rotated) {
+        ctx.drawImage(sprites[key], x - size / 2, y - size / 2, size, size);
+      } else {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(sprites[key], -size / 2, -size / 2, size, size);
+        ctx.restore();
+      }
+    }
   }
 
   function checker(y) {
@@ -848,11 +1022,44 @@
     ctx.fillRect(0, height - 5, width, 5);
   }
 
+  function drawStar(cx, cy, spikes, outerRadius, innerRadius, fill, stroke) {
+    let rot = Math.PI / 2 * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.4; ctx.stroke(); }
+    ctx.restore();
+  }
+
   function drawTitle(g) {
     checker(33);
-    label('这单怎么装？', width / 2, 118, 46, colors.red, 900, 'center');
-    label(levels.length + ' 单闯关，另有 ' + customOrders.length + ' 位客人等你接单。', width / 2, 161, 16, colors.subtle, 650, 'center');
-    const center = 342 + (height - 720) * .40;
+    const topPillY = 16;
+    const totalStars = getTotalStars();
+    const totalCoins = getTotalCoins();
+    round(20, topPillY, 110, 26, 13, '#ffffff45', '#b48752', 1);
+    label('⭐ 星数: ' + totalStars, 75, topPillY + 13, 12, colors.ink, 750, 'center');
+    round(138, topPillY, 110, 26, 13, '#ffffff45', '#b48752', 1);
+    label('💰 小费: ' + totalCoins, 193, topPillY + 13, 12, colors.ink, 750, 'center');
+
+    label('这单怎么装？', width / 2, 105, 44, colors.red, 900, 'center');
+    label(levels.length + ' 关闯关 · ' + customOrders.length + ' 位常客 · 每日特惠', width / 2, 145, 15, colors.subtle, 650, 'center');
+    const center = 315 + (height - 720) * .35;
     ctx.save();
     ctx.translate(width / 2, center);
     ctx.rotate(-.08);
@@ -871,24 +1078,36 @@
     sprite('fries', 31, 31, 91);
     sprite('pickup', 92, 23, 99);
     ctx.restore();
-    button(g.start, '开始打包');
+
+    button(g.start, '开始打包 (闯关模式)');
     secondaryButton(g.customStart, '自选套餐 · ' + customOrders.length + ' 位客人');
-    label('支持拖动，也可以点选摆放', width / 2, height - 34, 14, colors.subtle, 550, 'center');
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const isDailyDone = saveState.dailyDate === todayStr;
+    round(g.dailyStart.x, g.dailyStart.y, g.dailyStart.w, g.dailyStart.h, 10, isDailyDone ? '#e2d3b5' : colors.tomato, '#b48752', 1.5);
+    label(isDailyDone ? '今日已打卡 √' : '今日特惠 ⭐+50', g.dailyStart.x + g.dailyStart.w / 2, g.dailyStart.y + 22, 13, isDailyDone ? colors.subtle : '#ffffff', 800, 'center');
+
+    round(g.albumBtn.x, g.albumBtn.y, g.albumBtn.w, g.albumBtn.h, 10, colors.paper, '#b48752', 1.5);
+    label('常客好评 📖', g.albumBtn.x + g.albumBtn.w / 2, g.albumBtn.y + 22, 13, colors.ink, 800, 'center');
+
+    label('支持拖动，也可以点选摆放', width / 2, height - 20, 13, colors.subtle, 550, 'center');
   }
 
   function drawHeader(g) {
-    label('这单怎么装？', 26, g.header + 19, 24, colors.red, 850);
-    round(g.mute.x, g.mute.y + 5, g.mute.w, 34, 10, colors.paper, '#d6b887', 1);
-    label(muted ? '静音' : '音效开', g.mute.x + g.mute.w / 2, g.mute.y + 22, 13, colors.ink, 700, 'center');
+    label('这单怎么装？', 26, g.header + 19, 22, colors.red, 850);
+    round(130, g.mute.y, 58, g.mute.h, 13, '#ffffff55', '#d6b887', 1);
+    label('💰' + (saveState.coins || 0), 159, g.mute.y + 14, 12, colors.ink, 750, 'center');
+    round(g.mute.x, g.mute.y, g.mute.w, g.mute.h, 13, colors.paper, '#d6b887', 1);
+    label(muted ? '🔇 静音' : '🔈 声音', g.mute.x + g.mute.w / 2, g.mute.y + 14, 12, colors.ink, 750, 'center');
     if (customMode) {
-      label('客单 ' + (levelIndex + 1) + ' / ' + customOrders.length, 26, 81, 14, colors.ink, 750);
+      label((isDailyMode ? '⭐ 今日特惠 ' : '客单 ') + (levelIndex + 1) + ' / ' + customOrders.length, 26, 78, 14, isDailyMode ? colors.tomato : colors.ink, 750);
       secondaryButton(g.home, '回到首页');
     } else {
-      label('订单 ' + (levelIndex + 1) + ' / ' + levels.length, 26, 81, 14, colors.ink, 750);
-      const step = 171 / levels.length;
+      label('订单 ' + (levelIndex + 1) + ' / ' + levels.length, 26, 78, 14, colors.ink, 750);
+      const step = 145 / levels.length;
       for (let i = 0; i < levels.length; i++) {
         const fill = i < levelIndex || phase === 'won' ? colors.green : i === levelIndex ? colors.tomato : '#d9bb88';
-        round(200 + i * step, 77, step - 7, 7, 3.5, fill);
+        round(112 + i * step, 74, step - 5, 7, 3.5, fill);
       }
     }
     const r = g.receipt;
@@ -944,7 +1163,7 @@
           const cx = px + unit / 2;
           const cy = py + unit / 2;
           ctx.save();
-          ctx.setLineDash([3, 3]);
+          setDash([3, 3]);
           ellipse(cx, cy, unit * .30, unit * .30, null, isCup ? '#4a8c9e' : '#b7594d', 2);
           ctx.restore();
           label(isCup ? '杯位' : '酱位', cx, cy, 13, isCup ? colors.blue : colors.red, 750, 'center');
@@ -956,7 +1175,7 @@
     if (level.mainRight) {
       const boundary = origin.x + Math.ceil(level.size / 2) * unit;
       ctx.save();
-      ctx.setLineDash([5, 5]);
+      setDash([5, 5]);
       path([[boundary, origin.y + 4], [boundary, origin.y + origin.h - 4]], null, '#f8e8bb', 2.5);
       ctx.restore();
     }
@@ -970,6 +1189,20 @@
     }
     if (!preview && !held?.active && keyboardCell && phase === 'playing') {
       round(origin.x + keyboardCell.x * unit + 4, origin.y + keyboardCell.y * unit + 4, unit - 8, unit - 8, 8, null, colors.red, 2);
+    }
+    if (activeHint && activeHint.expires > now && !placed.has(activeHint.key)) {
+      const { key, x, y, rotated } = activeHint;
+      const { w, h } = dimensions(key, rotated);
+      const px = origin.x + x * unit;
+      const py = origin.y + y * unit;
+      const bw = w * unit;
+      const bh = h * unit;
+      const pulse = 0.5 + 0.35 * Math.sin(now / 160);
+      ctx.save();
+      setDash([5, 4]);
+      round(px + 3, py + 3, bw - 6, bh - 6, 12, 'rgba(245, 158, 11, ' + (pulse * 0.25) + ')', 'rgba(217, 119, 6, ' + pulse + ')', 3);
+      label('💡 放这里', px + bw / 2, py + bh / 2, Math.min(15, unit * 0.35), '#78350f', 800, 'center');
+      ctx.restore();
     }
     if (!preview) return;
     const { key, position, error } = preview;
@@ -1053,17 +1286,25 @@
       else if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
       else if (main && main !== key && level.mainChoices.includes(key)) label('备选', mid, y + 64, 12, colors.subtle, 700, 'center');
       else drawShape({ ...dimensions(key, rotated), edge: item.edge }, mid, y + 64);
+      if (activeHint && activeHint.expires > now && activeHint.key === key) {
+        round(x - 2, y - 2, w + 4, h + 4, 13, null, '#f59e0b', 2.5);
+        label('💡', mid, y - 6, 13, '#f59e0b', 800, 'center');
+      }
     }
-    label('重置本关', g.retry.x + 2, g.retry.y + 20, 14, colors.red, 700);
-    if (level.rotate) {
-      const r = g.rotate;
-      const ready = canRotate(selected);
-      round(r.x, r.y + 3, r.w, 35, 10, ready ? colors.paper : '#efdfbc', ready ? colors.red : '#ceb184');
-      label('旋转', r.x + r.w / 2, r.y + 21, 15, ready ? colors.red : colors.subtle, 750, 'center');
-    }
-    if (selected && placed.has(selected)) {
-      label('取出餐品', g.takeOut.x + g.takeOut.w - 2, g.takeOut.y + 20, 14, colors.red, 700, 'right');
-    }
+    round(g.retry.x, g.retry.y, g.retry.w, 36, 10, colors.paper, '#c4a675', 1);
+    label('重放', g.retry.x + g.retry.w / 2, g.retry.y + 19, 13, colors.red, 750, 'center');
+
+    const canRotateItem = level.rotate && canRotate(selected);
+    round(g.rotate.x, g.rotate.y, g.rotate.w, 36, 10, canRotateItem ? colors.paper : '#f0dfbe', canRotateItem ? colors.red : '#c4a675', 1);
+    label('旋转', g.rotate.x + g.rotate.w / 2, g.rotate.y + 19, 13, canRotateItem ? colors.red : colors.subtle, 750, 'center');
+
+    const canTakeOut = selected && placed.has(selected);
+    round(g.takeOut.x, g.takeOut.y, g.takeOut.w, 36, 10, canTakeOut ? colors.paper : '#f0dfbe', canTakeOut ? colors.red : '#c4a675', 1);
+    label('取出', g.takeOut.x + g.takeOut.w / 2, g.takeOut.y + 19, 13, canTakeOut ? colors.red : colors.subtle, 750, 'center');
+
+    round(g.hintBtn.x, g.hintBtn.y + 3, g.hintBtn.w, 36, 10, '#9c6614');
+    round(g.hintBtn.x, g.hintBtn.y, g.hintBtn.w, 36, 10, '#f59e0b');
+    label('💡 提示', g.hintBtn.x + g.hintBtn.w / 2, g.hintBtn.y + 19, 13, '#451a03', 800, 'center');
   }
 
   function drawFeedback(g, preview) {
@@ -1099,22 +1340,87 @@
     round(x, y + 6, w, h, 19, '#6a3826');
     round(x, y, w, h, 19, colors.paper, '#b48752', 2);
     round(x + 16, y + 16, w - 32, 6, 3, colors.tomato);
+
+    // 3 Golden Stars
+    const starY = y + 46;
+    for (let s = 0; s < 3; s++) {
+      const starX = width / 2 + (s - 1) * 36;
+      drawStar(starX, starY, 5, 14, 7, s < lastEarnedStars ? '#f59e0b' : '#e2d4bc', '#b48752');
+    }
+
+    const tipBonus = (lastTipEarned || 15) * rewardMultiplier;
+
     if (customMode) {
       const level = currentLevel();
-      label(final ? customOrders.length + ' 位客人都出餐了！' : level.guest + '这单装好了！',
-        width / 2, y + 65, 27, colors.red, 850, 'center');
-      label('本单主食 ' + items[packedMain()].label + ' · 已试 ' + servedMains[levelIndex].size + '/' + level.mainChoices.length,
-        width / 2, y + 108, 15, colors.subtle, 650, 'center');
+      const story = customerStories[level.guest] || { quote: '打包得真好！' };
+      label(final ? customOrders.length + ' 位客人都出餐了！' : level.guest + ' 这单装好了！',
+        width / 2, y + 74, 22, colors.red, 850, 'center');
+      label(story.quote, width / 2, y + 96, 12, colors.ink, 650, 'center');
+      label('基础小费 +' + lastTipEarned + ' 💰 · 累计: ' + (saveState.coins || 0) + ' · 主食: ' + servedMains[levelIndex].size + '/' + level.mainChoices.length,
+        width / 2, y + 116, 12, colors.green, 700, 'center');
+
+      button(g.tripleClaim, '🎬 3倍小费出餐 (+' + tipBonus + ' 💰)', '#e28821', '#8f4f0e');
+      secondaryButton(g.customNext, final ? '再接一轮' : '普通出餐 (下一单)');
       secondaryButton(g.customRetry, '重做本单');
-      button(g.customNext, final ? '再接一轮' : '接下一单');
+      round(g.customHome.x, g.customHome.y, g.customHome.w, g.customHome.h, 12, colors.paper, '#bf9c66', 1.5);
       label('回到首页', g.customHome.x + g.customHome.w / 2, g.customHome.y + g.customHome.h / 2,
         14, colors.red, 750, 'center');
       return;
     }
-    label(final ? finishText : '打包成功！', width / 2, y + 66, 30, colors.red, 850, 'center');
-    label(final ? '已完成 ' + levels.length + ' 单' : '下一单 · ' + levels[levelIndex + 1].title,
-      width / 2, y + 107, 15, colors.subtle, 650, 'center');
-    button(g.advance, final ? '再玩一次' : '接下一单');
+    label(final ? finishText : '打包成功！', width / 2, y + 74, 24, colors.red, 850, 'center');
+    label('基础小费 +' + lastTipEarned + ' 💰 · 累计小费: ' + (saveState.coins || 0),
+      width / 2, y + 98, 13, colors.green, 700, 'center');
+    label(final ? '已完成全部 ' + levels.length + ' 关闯关' : '下一关 · ' + levels[levelIndex + 1].title,
+      width / 2, y + 118, 12, colors.subtle, 650, 'center');
+    button(g.tripleClaim, '🎬 3倍小费出餐 (+' + tipBonus + ' 💰)', '#e28821', '#8f4f0e');
+    secondaryButton(g.advance, final ? '普通再玩一次' : '普通出餐 (下一关)');
+  }
+
+  function drawAlbum(g) {
+    checker(33);
+    label('常客好评图鉴', width / 2, 72, 26, colors.red, 850, 'center');
+    const orderCount = customOrders.length;
+    label('已服务 ' + Object.keys(saveState.stars || {}).filter(k => k.startsWith('c_')).length + ' / ' + orderCount + ' 位客人', width / 2, 98, 14, colors.subtle, 600, 'center');
+
+    const card = customOrders[albumIndex];
+    const story = customerStories[card.guest] || { role: '常客', quote: '“出餐速度很快，打包得真整齐！”' };
+    const levelKey = 'c_' + albumIndex;
+    const earnedStars = saveState.stars?.[levelKey] || 0;
+    const served = servedMains[albumIndex] || new Set();
+
+    const cx = 35;
+    const cy = 118;
+    const cw = width - 70;
+    const ch = height - 240;
+    round(cx + 3, cy + 5, cw, ch, 16, '#c49b6e');
+    round(cx, cy, cw, ch, 16, colors.paper, '#b48752', 2);
+
+    label(card.guest, width / 2, cy + 32, 24, colors.ink, 850, 'center');
+    round(width / 2 - 45, cy + 44, 90, 20, 10, colors.tan);
+    label(story.role, width / 2, cy + 58, 12, colors.subtle, 700, 'center');
+
+    const previewFood = card.foods[0] === 'hero' ? 'hero' : 'sandwich';
+    sprite(previewFood, width / 2, cy + 120, 88);
+
+    for (let s = 0; s < 3; s++) {
+      const starX = width / 2 + (s - 1) * 32;
+      const starY = cy + 178;
+      drawStar(starX, starY, 5, 12, 6, s < earnedStars ? '#f59e0b' : '#e2d4bc', '#b48752');
+    }
+    label(earnedStars > 0 ? '已获 ' + earnedStars + ' 星评价' : '未曾接单', width / 2, cy + 200, 13, colors.subtle, 600, 'center');
+
+    round(cx + 18, cy + 215, cw - 36, 62, 8, colors.cream, '#dbc39f', 1);
+    label(story.quote, width / 2, cy + 248, 13, colors.ink, 650, 'center');
+
+    const hasBurger = served.has('hero');
+    const hasSandwich = served.has('sandwich');
+    label('汉堡套餐: ' + (hasBurger ? '已达标 √' : '待尝试') + '    三明治: ' + (hasSandwich ? '已达标 √' : '待尝试'),
+      width / 2, cy + ch - 18, 12, colors.subtle, 600, 'center');
+
+    secondaryButton(g.albumPrev, '◀ 上位');
+    button(g.albumPlay, '去接这单');
+    secondaryButton(g.albumNext, '下位 ▶');
+    label('返回首页', g.albumBack.x + g.albumBack.w / 2, g.albumBack.y + 18, 14, colors.red, 750, 'center');
   }
 
   function draw(now) {
@@ -1131,7 +1437,9 @@
     ctx.clip();
     background();
     const g = geometry();
-    if (phase === 'title') {
+    if (phase === 'album') {
+      drawAlbum(g);
+    } else if (phase === 'title') {
       drawTitle(g);
     } else {
       const preview = getPlacementPreview(g);
@@ -1182,10 +1490,33 @@
     };
   }
   function click(at, g) {
+    if (phase === 'album') {
+      if (inside(at, g.albumPrev)) {
+        albumIndex = (albumIndex - 1 + customOrders.length) % customOrders.length;
+        sound('select');
+      } else if (inside(at, g.albumNext)) {
+        albumIndex = (albumIndex + 1) % customOrders.length;
+        sound('select');
+      } else if (inside(at, g.albumPlay)) {
+        start(albumIndex, true);
+        sound('select');
+      } else if (inside(at, g.albumBack)) {
+        returnToTitle();
+        sound('select');
+      }
+      return;
+    }
     if (phase === 'title') {
       if (inside(at, g.customStart)) start(0, true);
-      else if (inside(at, g.start) || inside(at, box(12, 180, 366, g.start.y - 180))) start(0, false);
-      else return;
+      else if (inside(at, g.start) || inside(at, box(12, 170, 366, g.start.y - 170))) start(0, false);
+      else if (inside(at, g.dailyStart)) {
+        isDailyMode = true;
+        const dayIdx = Math.floor(Date.now() / 86400000) % customOrders.length;
+        start(dayIdx, true);
+      } else if (inside(at, g.albumBtn)) {
+        phase = 'album';
+        albumIndex = 0;
+      } else return;
       sound('select');
       return;
     }
@@ -1193,6 +1524,7 @@
       if (performance.now() - completedAt < 160) return;
       if (customMode && inside(at, g.customHome)) returnToTitle();
       else if (customMode && inside(at, g.customRetry)) start(levelIndex);
+      else if (inside(at, g.tripleClaim)) claimTripleReward();
       else if (inside(at, customMode ? g.customNext : g.advance)) advance();
       return;
     }
@@ -1203,6 +1535,10 @@
     if (inside(at, g.mute)) {
       muted = !muted;
       if (!muted) sound('select');
+      return;
+    }
+    if (inside(at, g.hintBtn)) {
+      triggerHint();
       return;
     }
     if (inside(at, g.retry)) {
@@ -1248,8 +1584,88 @@
     else say(currentLevel().hint);
   }
   function advance() {
+    clearedCountSinceAd++;
+    if (clearedCountSinceAd >= 2) {
+      if (typeof window !== 'undefined' && window.GAME && typeof window.GAME.showInterstitialAd === 'function') {
+        window.GAME.showInterstitialAd();
+      }
+      clearedCountSinceAd = 0;
+    }
     start(phase === 'won' ? 0 : levelIndex + 1);
     sound('select');
+  }
+
+  function triggerHint() {
+    if (phase !== 'playing') return;
+    const level = currentLevel();
+    if (activeHint && activeHint.expires > performance.now()) {
+      say('提示：请将' + items[activeHint.key].label + '放入闪烁的格子里。');
+      return;
+    }
+    const doShowHint = () => {
+      const solution = level.solution || [];
+      let target = null;
+      for (const step of solution) {
+        const [k, x, y, rot] = step;
+        const currPos = placed.get(k);
+        const currRot = rotations.has(k);
+        if (!currPos || currPos.x !== x || currPos.y !== y || (rot && !currRot)) {
+          target = { key: k, x, y, rotated: !!rot };
+          break;
+        }
+      }
+      if (!target && solution.length > 0) {
+        target = { key: solution[0][0], x: solution[0][1], y: solution[0][2], rotated: !!solution[0][3] };
+      }
+      if (target) {
+        activeHint = { ...target, expires: performance.now() + 10000 };
+        if (target.rotated) rotations.add(target.key);
+        else rotations.delete(target.key);
+        selected = target.key;
+        sound('select');
+        if (typeof window !== 'undefined' && window.GAME?.vibrateShort) {
+          window.GAME.vibrateShort('medium');
+        }
+        say('💡 提示：将 ' + items[target.key].label + ' 放入第 ' + (target.y + 1) + ' 行第 ' + (target.x + 1) + ' 格。');
+      } else {
+        say('💡 仔细观察小票要求，相信你能独立完成！');
+      }
+    };
+
+    if (typeof window !== 'undefined' && window.GAME && typeof window.GAME.watchRewardedAd === 'function') {
+      window.GAME.watchRewardedAd('hint', doShowHint);
+    } else {
+      doShowHint();
+    }
+  }
+
+  function claimTripleReward() {
+    if (claimedTriple) {
+      advance();
+      return;
+    }
+    const doTriple = () => {
+      claimedTriple = true;
+      const base = lastTipEarned || 15;
+      const bonus = base * (rewardMultiplier - 1);
+      saveState.coins = (saveState.coins || 0) + bonus;
+      lastTipEarned += bonus;
+      saveGame();
+      sound('select');
+      if (typeof window !== 'undefined' && window.GAME?.vibrateShort) {
+        window.GAME.vibrateShort('heavy');
+      }
+      if (typeof wx !== 'undefined' && wx.showToast) {
+        try { wx.showToast({ title: '💰 3倍小费 +' + (base + bonus) + ' 到账！', icon: 'success', duration: 1500 }); } catch (_e) {}
+      }
+      setTimeout(advance, 500);
+    };
+
+    if (typeof window !== 'undefined' && window.GAME && typeof window.GAME.watchRewardedAd === 'function') {
+      window.GAME.watchRewardedAd('tripleReward', doTriple);
+    } else {
+      doTriple();
+    }
   }
 
   canvas.addEventListener('pointerdown', event => {
@@ -1305,8 +1721,30 @@
   canvas.addEventListener('lostpointercapture', cancelPointer);
   window.addEventListener('blur', () => { held = null; });
   window.addEventListener('keydown', event => {
+    if (phase === 'album') {
+      if (event.key === 'Escape') returnToTitle();
+      else if (event.key === 'ArrowLeft') {
+        albumIndex = (albumIndex - 1 + customOrders.length) % customOrders.length;
+      } else if (event.key === 'ArrowRight') {
+        albumIndex = (albumIndex + 1) % customOrders.length;
+      } else if (event.key === 'Enter') {
+        start(albumIndex, true);
+      }
+      return;
+    }
     if (phase === 'title' && event.key === '2') {
       start(0, true);
+      return;
+    }
+    if (phase === 'title' && event.key === '3') {
+      isDailyMode = true;
+      const dayIdx = Math.floor(Date.now() / 86400000) % customOrders.length;
+      start(dayIdx, true);
+      return;
+    }
+    if (phase === 'title' && event.key === '4') {
+      phase = 'album';
+      albumIndex = 0;
       return;
     }
     if (event.key === 'Enter' || event.key === ' ') {
@@ -1350,19 +1788,30 @@
   });
 
   function resize() {
-    viewWidth = canvas.clientWidth || window.innerWidth;
-    viewHeight = canvas.clientHeight || window.innerHeight;
-    const safeStyle = getComputedStyle(live);
-    const topInset = parseFloat(safeStyle.paddingTop) || 0;
-    const bottomInset = parseFloat(safeStyle.paddingBottom) || 0;
-    const availableHeight = Math.max(1, viewHeight - topInset - bottomInset);
-    dpr = Math.min(2, window.devicePixelRatio || 1);
+    viewWidth = (canvas && canvas.clientWidth) || (typeof window !== 'undefined' ? window.innerWidth : 390) || 390;
+    viewHeight = (canvas && canvas.clientHeight) || (typeof window !== 'undefined' ? window.innerHeight : 720) || 720;
+    const safeStyle = (live && typeof getComputedStyle === 'function') ? getComputedStyle(live) : null;
+    const rawSafe = (typeof window !== 'undefined' && window.GAME && window.GAME.safeArea) || null;
+    let wxTopInset = 0;
+    let wxBottomInset = 0;
+    if (rawSafe) {
+      wxTopInset = Number(rawSafe.top) || 0;
+      if (typeof rawSafe.bottom === 'number' && rawSafe.bottom > 0) {
+        wxBottomInset = rawSafe.bottom >= viewHeight ? 0 : Math.max(0, viewHeight - rawSafe.bottom);
+      }
+    }
+    const topInset = (safeStyle && parseFloat(safeStyle.paddingTop)) || wxTopInset || 0;
+    const bottomInset = (safeStyle && parseFloat(safeStyle.paddingBottom)) || wxBottomInset || 0;
+    const availableHeight = Math.max(300, viewHeight - topInset - bottomInset);
+    dpr = Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
     scale = Math.min(viewWidth / width, availableHeight / 720, 1.18);
     height = Math.min(860, availableHeight / scale);
     offsetX = (viewWidth - width * scale) / 2;
     offsetY = topInset + (availableHeight - height * scale) / 2;
-    canvas.width = Math.round(viewWidth * dpr);
-    canvas.height = Math.round(viewHeight * dpr);
+    if (canvas) {
+      canvas.width = Math.round(viewWidth * dpr);
+      canvas.height = Math.round(viewHeight * dpr);
+    }
   }
 
   window.__gameState = () => ({
@@ -1374,6 +1823,7 @@
     waitingFoods: Object.keys(currentLevel().lateFoods || {}).filter(isWaitingForFood),
     preview: getPlacementPreview(geometry()), rotations: [...rotations],
     score: levelIndex + Number(phase === 'won'), hearts: 1, fps,
+    stars: getTotalStars(), coins: getTotalCoins(), streak: saveState.streak || 0,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
   });
   window.__renderSlots = () => Object.fromEntries(
