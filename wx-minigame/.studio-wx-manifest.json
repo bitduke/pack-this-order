@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "managedImages": [
+    "background.png",
+    "fries.png",
+    "hero.png",
+    "pickup.png",
+    "rings.png",
+    "sandwich.png"
+  ],
+  "managedAudio": []
+}

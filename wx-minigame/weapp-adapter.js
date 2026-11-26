@@ -266,29 +266,31 @@
       var origFill = ctx.fill ? ctx.fill.bind(ctx) : null;
       var origStroke = ctx.stroke ? ctx.stroke.bind(ctx) : null;
       if (origFill) {
-        ctx.fill = function (a, b) {
-          if (a && a.ops) {
+        ctx.fill = function () {
+          if (arguments.length > 0 && arguments[0] && arguments[0].ops) {
             ctx.beginPath();
+            var a = arguments[0];
             for (var i = 0; i < a.ops.length; i++) {
               var op = a.ops[i];
               if (typeof ctx[op[0]] === 'function') ctx[op[0]].apply(ctx, op[1]);
             }
-            return origFill(b);
+            return arguments.length > 1 ? origFill(arguments[1]) : origFill();
           }
-          return origFill(a, b);
+          return origFill.apply(ctx, arguments);
         };
       }
       if (origStroke) {
-        ctx.stroke = function (a) {
-          if (a && a.ops) {
+        ctx.stroke = function () {
+          if (arguments.length > 0 && arguments[0] && arguments[0].ops) {
             ctx.beginPath();
+            var a = arguments[0];
             for (var i = 0; i < a.ops.length; i++) {
               var op = a.ops[i];
               if (typeof ctx[op[0]] === 'function') ctx[op[0]].apply(ctx, op[1]);
             }
             return origStroke();
           }
-          return origStroke(a);
+          return origStroke.apply(ctx, arguments);
         };
       }
       return ctx;
@@ -363,11 +365,18 @@
     return cv;
   }
 
-  var screenCanvas = patchCanvas(wx.createCanvas(), true);
+  var origCreateCanvas = wx.createCanvas.bind(wx);
+  var screenCanvas = patchCanvas(origCreateCanvas(), true);
   safeSet(root, '__screenCanvas', screenCanvas);
   safeSet(root, 'canvas', screenCanvas);
+  safeSet(root, '__canvas', screenCanvas);
   safeSet(win, '__screenCanvas', screenCanvas);
   safeSet(win, 'canvas', screenCanvas);
+  safeSet(win, '__canvas', screenCanvas);
+
+  wx.createCanvas = function () {
+    return patchCanvas(origCreateCanvas(), false);
+  };
 
   var NativeImage = (typeof win.Image === 'function') ? win.Image : null;
   var inCreateWxImage = false;
@@ -613,7 +622,6 @@
       emitReg(canvasListeners, touchType, tev);
       emitReg(docListeners, touchType, tev);
       emitReg(winListeners, touchType, tev);
-      return;
     }
 
     for (var i = 0; i < changed.length; i++) {

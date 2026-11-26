@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="out"></div>
+<script>
+const out = document.getElementById('out');
+const c = document.createElement('canvas').getContext('2d');
+c.beginPath();
+c.rect(0, 0, 10, 10);
+try {
+  c.fill(undefined, undefined);
+  out.innerHTML += 'FILL_OK ';
+} catch(e) {
+  out.innerHTML += 'FILL_ERR: ' + e.message + ' ';
+}
+try {
+  c.stroke(undefined);
+  out.innerHTML += 'STROKE_OK';
+} catch(e) {
+  out.innerHTML += 'STROKE_ERR: ' + e.message;
+}
+console.log(out.innerHTML);
+</script>
+</body>
+</html>

@@ -1,1 +1,11 @@
+node_modules/
 .studio/
+*.log
+
+# Temporary test screenshots in root
+/*_test.png
+/*_screen.png
+/*_persisted.png
+/preview-qrcode.jpg
+/modal_stars_test.png
+/order_complete_screen.png

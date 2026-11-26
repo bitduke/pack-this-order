@@ -19,13 +19,13 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
 (() => {
   'use strict';
 
-  const canvas = (typeof document !== 'undefined' && document.getElementById && document.getElementById('game')) || (typeof window !== 'undefined' && window.__canvas) || (typeof wx !== 'undefined' && wx.createCanvas ? wx.createCanvas() : null);
+  const canvas = (typeof window !== 'undefined' && (window.__canvas || window.canvas || window.__screenCanvas)) || (typeof document !== 'undefined' && document.getElementById && document.getElementById('game')) || (typeof wx !== 'undefined' && wx.createCanvas ? wx.createCanvas() : null);
   const screen = canvas.getContext('2d');
   let ctx = screen;
   const width = 390;
   const boardSize = 278;
   const boardX = (width - boardSize) / 2;
-  const font = '"PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+  const font = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
   const colors = {
     ink: '#37291f', subtle: '#725644', red: '#a52b21', tomato: '#cf4935',
     cream: '#fff4d9', paper: '#fff9e9', tan: '#efe0ba', kraft: '#9e6941',
@@ -33,13 +33,13 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
     dark: '#352820', white: '#fffdf3'
   };
   const items = {
-    hero:     { label: '热汉堡', w: 2, h: 2, shade: '#f6c47d', edge: '#be733c' },
-    pickup:   { label: '冰饮',   w: 1, h: 1, shade: '#b8e1e8', edge: '#5794a3' },
-    fries:    { label: '薯条',   w: 1, h: 2, shade: '#f9cd70', edge: '#ad7633' },
-    rings:    { label: '洋葱圈', w: 2, h: 1, shade: '#f1d9a8', edge: '#a87c4c' },
-    sandwich: { label: '三明治', w: 3, h: 1, shade: '#d2e0a3', edge: '#7a9052' },
-    sauce:    { label: '蘸酱',   w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' },
-    soup:     { label: '热汤',   w: 1, h: 1, shade: '#eac688', edge: '#aa7540' }
+    hero:     { label: '热汉堡', emoji: '🍔', w: 2, h: 2, shade: '#f6c47d', edge: '#be733c' },
+    pickup:   { label: '冰饮',   emoji: '🥤', w: 1, h: 1, shade: '#b8e1e8', edge: '#5794a3' },
+    fries:    { label: '薯条',   emoji: '🍟', w: 1, h: 2, shade: '#f9cd70', edge: '#ad7633' },
+    rings:    { label: '洋葱圈', emoji: '🧅', w: 2, h: 1, shade: '#f1d9a8', edge: '#a87c4c' },
+    sandwich: { label: '三明治', emoji: '🥪', w: 3, h: 1, shade: '#d2e0a3', edge: '#7a9052' },
+    sauce:    { label: '蘸酱',   emoji: '🥫', w: 1, h: 1, shade: '#edb8a2', edge: '#b35743' },
+    soup:     { label: '热汤',   emoji: '🍲', w: 1, h: 1, shade: '#eac688', edge: '#aa7540' }
   };
   const levels = [
     {
@@ -694,7 +694,7 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       dailyStart: box(45, height - 88, 145, 42),
       albumBtn: box(200, height - 88, 145, 42),
       home: box(175, 62, 95, 28),
-      mute: box(196, 31, 72, 28),
+      mute: box(186, 31, 68, 28),
       modal: box(31, height / 2 - (customMode ? 155 : 135), 328, customMode ? 315 : 270),
       tripleClaim: box(55, height / 2 + (customMode ? 32 : 36), 280, 46),
       advance: box(55, height / 2 + (customMode ? 84 : 88), 280, 42),
@@ -831,8 +831,9 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
     if (fill) { ctx.fillStyle = fill; ctx.fill(); }
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
   }
-  function label(content, x, y, size, color = colors.ink, weight = 600, align = 'left') {
-    ctx.font = weight + ' ' + size + 'px ' + font;
+  function label(content, x, y, size = 15, color = colors.ink, weight = 600, align = 'left') {
+    const w = weight >= 700 ? 'bold' : (weight >= 500 ? '600' : 'normal');
+    ctx.font = w + ' ' + Math.round(size) + 'px ' + font;
     ctx.fillStyle = color;
     ctx.textAlign = align;
     ctx.textBaseline = 'middle';
@@ -1112,9 +1113,9 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
   }
 
   function drawHeader(g) {
-    label('这单怎么装？', 26, g.header + 19, 22, colors.red, 850);
-    round(130, g.mute.y, 58, g.mute.h, 13, '#ffffff55', '#d6b887', 1);
-    label('💰' + (saveState.coins || 0), 159, g.mute.y + 14, 12, colors.ink, 750, 'center');
+    label('这单怎么装？', 22, g.header + 19, 16, colors.red, 800);
+    round(122, g.mute.y, 56, g.mute.h, 13, '#ffffff55', '#d6b887', 1);
+    label('💰' + (saveState.coins || 0), 150, g.mute.y + 14, 12, colors.ink, 750, 'center');
     round(g.mute.x, g.mute.y, g.mute.w, g.mute.h, 13, colors.paper, '#d6b887', 1);
     label(muted ? '🔇 静音' : '🔈 声音', g.mute.x + g.mute.w / 2, g.mute.y + 14, 12, colors.ink, 750, 'center');
     if (customMode) {
@@ -1129,17 +1130,40 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       }
     }
     const r = g.receipt;
-    round(r.x + 2, r.y + 4, r.w, r.h, 11, '#d5ae77');
-    round(r.x, r.y, r.w, r.h, 11, colors.paper);
+    round(r.x + 2, r.y + 4, r.w, r.h, 12, '#d5ae77');
+    round(r.x, r.y, r.w, r.h, 12, '#ffffff', '#c49a62', 1.5);
     const level = currentLevel();
-    label(customMode ? level.guest + ' · ' + level.title : level.title, r.x + 15, r.y + 20, 19, colors.ink, 800);
-    label('已装 ' + placed.size + '/' + requiredFoodCount(), r.x + r.w - 15, r.y + 20, 14, colors.green, 700, 'right');
-    const lines = level.instruction;
-    const compact = lines.length > 3;
-    rule(r.x + 15, r.x + r.w - 15, r.y + (compact ? 34 : 38), '#c7a77b');
-    const lineStep = compact ? 16 : lines.length > 2 ? 17 : 19;
-    const firstLine = r.y + (compact ? 46 : 54);
-    lines.forEach((line, i) => label(line, r.x + 15, firstLine + i * lineStep, compact ? 14 : 15, colors.subtle, 650));
+    label(customMode ? level.guest + ' · ' + level.title : level.title, r.x + 14, r.y + 18, 17, colors.ink, 'bold');
+    const isAllPlaced = placed.size === requiredFoodCount();
+    label(isAllPlaced ? '✅ 装好了' : '已装 ' + placed.size + '/' + requiredFoodCount(), r.x + r.w - 14, r.y + 18, 13, isAllPlaced ? colors.green : colors.tomato, 'bold', 'right');
+    rule(r.x + 14, r.x + r.w - 14, r.y + 34, '#e2cbab');
+
+    // Visual Checklist Pills Row (Icon goals)
+    const checklistFoods = level.foods || [];
+    const pillCount = Math.min(6, checklistFoods.length);
+    const pillW = Math.min(56, (r.w - 28 - (pillCount - 1) * 6) / pillCount);
+    const pillH = 22;
+    const startPillX = r.x + 14;
+    const pillY = r.y + 40;
+    checklistFoods.slice(0, pillCount).forEach((k, idx) => {
+      const it = items[k];
+      if (!it) return;
+      const px = startPillX + idx * (pillW + 6);
+      const isOk = placed.has(k);
+      round(px, pillY, pillW, pillH, 6, isOk ? '#dcfce7' : '#f8f1e3', isOk ? '#22c55e' : '#dfc49f', 1);
+      label((it.emoji || '') + (isOk ? ' ✓' : ''), px + pillW / 2, pillY + pillH / 2, 12, isOk ? '#15803d' : colors.ink, 'bold', 'center');
+    });
+
+    // Intuitive Punchy Single-Line Rule Badge with Emojis
+    let ruleBadge = '🧩 拖动或点击餐品入盒，不可重叠';
+    if (level.heat && level.cup) ruleBadge = '🥤 冰饮进杯位 · ❄️ 冰与 ♨️ 热食保持距离';
+    else if (level.heat) ruleBadge = '❄️ 冰饮与 ♨️ 热汉堡四向不贴边';
+    else if (level.cup) ruleBadge = '🥤 冰饮必须装入圆形杯位';
+    else if (level.sauceSides && level.sauceSides.length) ruleBadge = '🍟 薯条与 🥫 蘸酱必须相邻贴边';
+    else if (level.rotate) ruleBadge = '🔄 选餐品点「旋转」横竖切换，绕开隔板';
+
+    round(r.x + 14, r.y + 68, r.w - 28, 22, 6, '#fff4de', '#e5cca4', 1);
+    label(ruleBadge, r.x + r.w / 2, r.y + 79, 12, colors.red, 'bold', 'center');
   }
 
   function drawFoodOnBoard(key, x, y, w, h, { alpha = 1, emphasized = false, rotated = false } = {}) {
@@ -1151,6 +1175,18 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
     round(x + 4, y + 4, w - 8, h - 8, 7, null, '#fff6d56e');
     const icon = Math.min(w * .78, h * .85, key === 'hero' ? 115 : 87);
     sprite(key, x + w / 2, y + h / 2, icon, rotated);
+
+    // Cute cartoon temperature and item indicators
+    if (alpha > 0.8) {
+      if (key === 'hero') {
+        const steamY = y - 4 + Math.sin(Date.now() / 250) * 2;
+        label('♨️', x + w / 2, steamY, 13, '#ef4444', 'normal', 'center');
+      } else if (key === 'pickup') {
+        label('❄️', x + w - 8, y + 8, 12, '#38bdf8', 'normal', 'center');
+      } else if (key === 'sauce') {
+        label('🥫', x + w - 8, y + 8, 11, '#ef4444', 'normal', 'center');
+      }
+    }
     ctx.restore();
   }
   function drawBoard(g, now, preview) {
@@ -1174,20 +1210,30 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
           path([[px + 26, py + unit - 13], [px + unit - 13, py + 26]], null, '#b88768', 1.5);
           continue;
         }
-        const base = level.mainRight && x >= Math.ceil(level.size / 2) ? '#ecd097' : '#f5dfb3';
-        round(px + 2, py + 2, unit - 4, unit - 4, 9, isCup ? colors.paleBlue : isSauceSlot ? '#f6cabb' : base);
-        const reservedFor = isCup ? 'pickup' : isSauceSlot ? 'sauce' : null;
-        if (reservedFor && !placed.has(reservedFor)) {
-          const cx = px + unit / 2;
-          const cy = py + unit / 2;
-          ctx.save();
-          setDash([3, 3]);
-          ellipse(cx, cy, unit * .30, unit * .30, null, isCup ? '#4a8c9e' : '#b7594d', 2);
-          ctx.restore();
-          label(isCup ? '杯位' : '酱位', cx, cy, 13, isCup ? colors.blue : colors.red, 750, 'center');
-        } else if (!reservedFor) {
-          ellipse(px + unit / 2, py + unit / 2, 1.4, 1.4, '#d7b589');
+        if (isCup) {
+          round(px + 2, py + 2, unit - 4, unit - 4, 10, '#dbeafe', '#38bdf8', 2);
+          if (!placed.has('pickup')) {
+            const cx = px + unit / 2;
+            const cy = py + unit / 2;
+            ellipse(cx, cy, unit * 0.32, unit * 0.32, '#bfdbfe', '#0284c7', 1.5);
+            label('🥤', cx, cy - 3, 18, null, 'normal', 'center');
+            label('杯位', cx, cy + 16, 11, colors.blue, 'bold', 'center');
+          }
+          continue;
         }
+        if (isSauceSlot) {
+          round(px + 2, py + 2, unit - 4, unit - 4, 10, '#fee2e2', '#f87171', 2);
+          if (!placed.has('sauce')) {
+            const cx = px + unit / 2;
+            const cy = py + unit / 2;
+            label('🥫', cx, cy - 3, 16, null, 'normal', 'center');
+            label('酱位', cx, cy + 15, 11, colors.red, 'bold', 'center');
+          }
+          continue;
+        }
+        const base = level.mainRight && x >= Math.ceil(level.size / 2) ? '#ecd097' : '#f5dfb3';
+        round(px + 2, py + 2, unit - 4, unit - 4, 9, base);
+        ellipse(px + unit / 2, py + unit / 2, 1.4, 1.4, '#d7b589');
       }
     }
     if (level.mainRight) {
@@ -1197,6 +1243,30 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       path([[boundary, origin.y + 4], [boundary, origin.y + origin.h - 4]], null, '#f8e8bb', 2.5);
       ctx.restore();
     }
+
+    // Beginner visual shape-fitting silhouettes (Level 1 & 2)
+    if ((levelIndex === 0 || levelIndex === 1) && !customMode) {
+      const solution = level.solution || [];
+      for (const [key, sx, sy, sRot] of solution) {
+        if (!placed.has(key)) {
+          const { w, h } = dimensions(key, sRot);
+          const px = origin.x + sx * unit + 3;
+          const py = origin.y + sy * unit + 3;
+          const pw = w * unit - 6;
+          const ph = h * unit - 6;
+          ctx.save();
+          setDash([4, 4]);
+          round(px, py, pw, ph, 10, '#ffffff66', (items[key]?.edge || '#b48752') + '88', 1.5);
+          ctx.restore();
+          ctx.save();
+          ctx.globalAlpha = 0.28;
+          sprite(key, px + pw / 2, py + ph / 2, Math.min(pw, ph) * 0.72, sRot);
+          ctx.restore();
+        }
+      }
+    }
+
+    // Placed items
     for (const [key, pos] of placed) {
       const item = dimensions(key, pos.rotated);
       const dragged = held?.active && held.key === key;
@@ -1204,6 +1274,53 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       drawFoodOnBoard(key, origin.x + pos.x * unit + 3, origin.y + pos.y * unit + 3 - Math.sin(bounce * Math.PI) * 3,
         item.w * unit - 6, item.h * unit - 7,
         { alpha: dragged ? .25 : 1, emphasized: selected === key && !dragged, rotated: pos.rotated });
+    }
+
+    // Dynamic Tutorial Hand gesture on Level 1
+    if (levelIndex === 0 && !customMode && placed.size === 0 && !held?.active && !tapPreview) {
+      const burgerCard = g.tray.find(t => t.key === 'hero') || g.tray[0];
+      if (burgerCard) {
+        const startX = burgerCard.x + burgerCard.w / 2;
+        const startY = burgerCard.y + burgerCard.h / 2;
+        const targetX = origin.x + unit;
+        const targetY = origin.y + unit;
+
+        const cycle = (now % 2200) / 2200;
+        let curX = startX;
+        let curY = startY;
+        let alpha = 1;
+        let scale = 1;
+        if (cycle < 0.2) {
+          scale = 1 - Math.sin((cycle / 0.2) * Math.PI) * 0.15;
+        } else if (cycle < 0.6) {
+          const p = (cycle - 0.2) / 0.4;
+          const ease = p * p * (3 - 2 * p);
+          curX = startX + (targetX - startX) * ease;
+          curY = startY + (targetY - startY) * ease;
+        } else if (cycle < 0.8) {
+          curX = targetX;
+          curY = targetY;
+          scale = 1 + Math.sin(((cycle - 0.6) / 0.2) * Math.PI) * 0.15;
+        } else {
+          curX = targetX;
+          curY = targetY;
+          alpha = Math.max(0, 1 - (cycle - 0.8) / 0.2);
+        }
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        if (cycle < 0.2 || (cycle >= 0.6 && cycle < 0.8)) {
+          ellipse(curX, curY, 20 * scale, 20 * scale, '#f59e0b44', '#f59e0b', 2);
+        }
+        ctx.font = '36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('👆', curX + 12, curY + 22);
+
+        round(width / 2 - 100, burgerCard.y - 36, 200, 26, 13, '#ffffffea', '#f59e0b', 1.5);
+        label('👉 拖动或点击汉堡装盒', width / 2, burgerCard.y - 23, 12, colors.red, 'bold', 'center');
+        ctx.restore();
+      }
     }
     if (!preview && !held?.active && keyboardCell && phase === 'playing') {
       round(origin.x + keyboardCell.x * unit + 4, origin.y + keyboardCell.y * unit + 4, unit - 8, unit - 8, 8, null, colors.red, 2);
@@ -1234,6 +1351,19 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
           error ? '#b8353147' : '#79ad5947', error ? colors.red : colors.green, 2.5);
       }
     }
+    if (error) {
+      const tipW = Math.min(220, (error.length + 3) * 14);
+      const tipX = Math.max(10, Math.min(width - tipW - 10, x + (w * unit) / 2 - tipW / 2));
+      const tipY = y - 26;
+      round(tipX, tipY, tipW, 24, 12, '#fee2e2', '#ef4444', 1.5);
+      label('⚠️ ' + error, tipX + tipW / 2, tipY + 12, 11, colors.red, 'bold', 'center');
+    } else {
+      const tipW = 86;
+      const tipX = Math.max(10, Math.min(width - tipW - 10, x + (w * unit) / 2 - tipW / 2));
+      const tipY = y - 26;
+      round(tipX, tipY, tipW, 24, 12, '#dcfce7', '#22c55e', 1.5);
+      label('✅ 可以放', tipX + tipW / 2, tipY + 12, 11, '#15803d', 'bold', 'center');
+    }
   }
 
   function drawShape(item, x, y) {
@@ -1247,7 +1377,8 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       }
     }
   }
-  function drawTray(g) {
+  function drawTray(g, now) {
+    const curNow = (typeof now === 'number' && now > 0) ? now : performance.now();
     label('备餐台', 27, g.foodLabelY, 14, colors.subtle, 770);
     const level = currentLevel();
     const nextLateFood = Object.keys(level.lateFoods || {}).find(isWaitingForFood);
@@ -1299,12 +1430,12 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       } else {
         sprite(key, mid, y + 23, 40, rotated);
       }
-      label(item.label, mid, y + 48, 14, colors.ink, 720, 'center');
+      label((item.emoji || '') + ' ' + item.label, mid, y + 48, 13, colors.ink, 'bold', 'center');
       if (waiting) label(key === 'soup' ? '待出锅' : '待上桌', mid, y + 64, 12, colors.subtle, 700, 'center');
-      else if (stowed && !pendingRotation) label('已装', mid, y + 64, 12, colors.green, 700, 'center');
+      else if (stowed && !pendingRotation) label('✅ 已装', mid, y + 64, 12, colors.green, 'bold', 'center');
       else if (main && main !== key && level.mainChoices.includes(key)) label('备选', mid, y + 64, 12, colors.subtle, 700, 'center');
       else drawShape({ ...dimensions(key, rotated), edge: item.edge }, mid, y + 64);
-      if (activeHint && activeHint.expires > now && activeHint.key === key) {
+      if (activeHint && activeHint.expires > curNow && activeHint.key === key) {
         round(x - 2, y - 2, w + 4, h + 4, 13, null, '#f59e0b', 2.5);
         label('💡', mid, y - 6, 13, '#f59e0b', 800, 'center');
       }
@@ -1396,29 +1527,31 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
 
   function drawAlbum(g) {
     checker(33);
-    label('常客好评图鉴', width / 2, 72, 26, colors.red, 850, 'center');
+    label('常客好评图鉴', width / 2, 72, 24, colors.red, 800, 'center');
     const orderCount = customOrders.length;
     label('已服务 ' + Object.keys(saveState.stars || {}).filter(k => k.startsWith('c_')).length + ' / ' + orderCount + ' 位客人', width / 2, 98, 14, colors.subtle, 600, 'center');
 
-    const card = customOrders[albumIndex];
+    const card = customOrders[albumIndex] || customOrders[0];
     const story = customerStories[card.guest] || { role: '常客', quote: '“出餐速度很快，打包得真整齐！”' };
     const levelKey = 'c_' + albumIndex;
     const earnedStars = saveState.stars?.[levelKey] || 0;
     const served = servedMains[albumIndex] || new Set();
 
-    const cx = 35;
+    const cx = 32;
     const cy = 118;
-    const cw = width - 70;
+    const cw = width - 64;
     const ch = height - 240;
-    round(cx + 3, cy + 5, cw, ch, 16, '#c49b6e');
-    round(cx, cy, cw, ch, 16, colors.paper, '#b48752', 2);
+    round(cx + 2, cy + 4, cw, ch, 16, '#c49b6e');
+    round(cx, cy, cw, ch, 16, '#ffffff', '#b48752', 2);
 
-    label(card.guest, width / 2, cy + 32, 24, colors.ink, 850, 'center');
-    round(width / 2 - 45, cy + 44, 90, 20, 10, colors.tan);
-    label(story.role, width / 2, cy + 58, 12, colors.subtle, 700, 'center');
+    label(card.guest, width / 2, cy + 32, 24, colors.ink, 800, 'center');
+    round(width / 2 - 45, cy + 45, 90, 22, 11, colors.tan);
+    label(story.role, width / 2, cy + 56, 12, colors.subtle, 700, 'center');
 
-    const previewFood = card.foods[0] === 'hero' ? 'hero' : 'sandwich';
-    sprite(previewFood, width / 2, cy + 120, 88);
+    // Central circular food plate
+    ellipse(width / 2, cy + 120, 46, 46, '#fff4de', '#dfc79f', 2);
+    const previewFood = (card.foods && card.foods[0] === 'hero') ? 'hero' : 'sandwich';
+    sprite(previewFood, width / 2, cy + 120, 84);
 
     for (let s = 0; s < 3; s++) {
       const starX = width / 2 + (s - 1) * 32;
@@ -1427,8 +1560,8 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
     }
     label(earnedStars > 0 ? '已获 ' + earnedStars + ' 星评价' : '未曾接单', width / 2, cy + 200, 13, colors.subtle, 600, 'center');
 
-    round(cx + 18, cy + 215, cw - 36, 62, 8, colors.cream, '#dbc39f', 1);
-    label(story.quote, width / 2, cy + 248, 13, colors.ink, 650, 'center');
+    round(cx + 16, cy + 215, cw - 32, 62, 10, '#fff9ed', '#dbc39f', 1);
+    label(story.quote, width / 2, cy + 246, 13, colors.ink, 600, 'center');
 
     const hasBurger = served.has('hero');
     const hasSandwich = served.has('sandwich');
@@ -1438,7 +1571,8 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
     secondaryButton(g.albumPrev, '◀ 上位');
     button(g.albumPlay, '去接这单');
     secondaryButton(g.albumNext, '下位 ▶');
-    label('返回首页', g.albumBack.x + g.albumBack.w / 2, g.albumBack.y + 18, 14, colors.red, 750, 'center');
+    round(g.albumBack.x, g.albumBack.y, g.albumBack.w, g.albumBack.h, 19, '#ffffff', '#c49a62', 1.5);
+    label('返回首页', g.albumBack.x + g.albumBack.w / 2, g.albumBack.y + g.albumBack.h / 2, 14, colors.red, 700, 'center');
   }
 
   function draw(now) {
@@ -1464,7 +1598,7 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       drawHeader(g);
       drawBoard(g, now, preview);
       drawFeedback(g, preview);
-      drawTray(g);
+      drawTray(g, now);
       if (held?.active && !preview) {
         sprite(held.key, held.point.x, held.point.y - 26, 63, rotations.has(held.key));
       }
@@ -1593,8 +1727,41 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
   }
   function interactWithCell(cell, at, g) {
     if (selected) {
-      if (isMultiCell(selected)) makeTapPreview(selected, cell, at, g);
-      else put(selected, cell);
+      if (isMultiCell(selected)) {
+        const size = currentLevel().size;
+        const { w, h } = dimensions(selected, rotations.has(selected));
+        const choices = [];
+        for (let y = Math.max(0, cell.y - h + 1); y <= Math.min(cell.y, size - h); y++) {
+          for (let x = Math.max(0, cell.x - w + 1); x <= Math.min(cell.x, size - w); x++) {
+            const position = draftPosition(selected, x, y);
+            const center = itemCenter(selected, position, g);
+            choices.push({
+              position,
+              distance: (center.x - at.x) ** 2 + (center.y - at.y) ** 2,
+              error: checkPlacement(selected, position)
+            });
+          }
+        }
+        choices.sort((a, b) => a.distance - b.distance);
+        const validChoice = choices.find(c => !c.error);
+        if (validChoice) {
+          put(selected, validChoice.position);
+          tapPreview = null;
+          return;
+        }
+        if (choices.length > 0 && choices[0].error) {
+          wrongAttempts++;
+          say(choices[0].error, 'error');
+          sound('error');
+          if (typeof window !== 'undefined' && window.GAME?.vibrateShort) {
+            window.GAME.vibrateShort('heavy');
+          }
+          return;
+        }
+        makeTapPreview(selected, cell, at, g);
+      } else {
+        put(selected, cell);
+      }
       return;
     }
     const piece = occupant(cell);
@@ -1687,7 +1854,7 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
   }
 
   canvas.addEventListener('pointerdown', event => {
-    if (!event.isPrimary || event.button !== 0 || held) return;
+    if (!event.isPrimary || (event.button !== 0 && event.button !== undefined && event.button !== -1) || held) return;
     keyboardCell = null;
     const at = point(event);
     const g = geometry();
@@ -1705,7 +1872,9 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       grabX: matchesShape ? (at.x - g.inner.x) / g.unit - position.x : size.w / 2,
       grabY: matchesShape ? (at.y - g.inner.y) / g.unit - position.y : size.h / 2
     };
-    canvas.setPointerCapture(event.pointerId);
+    if (typeof canvas.setPointerCapture === 'function') {
+      try { canvas.setPointerCapture(event.pointerId); } catch (_e) {}
+    }
   });
   canvas.addEventListener('pointermove', event => {
     if (!held || held.id !== event.pointerId) return;
@@ -1834,7 +2003,11 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
 
   window.__gameState = () => ({
     phase: phase === 'order-complete' ? 'playing' : phase,
+    rawPhase: phase,
     screen: phase, level: levelIndex + 1, placed: Object.fromEntries(placed), feedback: feedback.text,
+    title: currentLevel() ? currentLevel().title : '',
+    requiredCount: typeof requiredFoodCount === 'function' ? requiredFoodCount() : 0,
+    tapPreview: Boolean(tapPreview),
     mode: customMode ? 'custom' : 'campaign', main: packedMain() || null,
     guest: customMode ? currentLevel().guest : null, servedMains: customMode ? [...servedMains[levelIndex]] : [],
     soupWaiting: isWaitingForFood('soup'), sauceWaiting: isWaitingForFood('sauce'),
@@ -1844,12 +2017,16 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
     stars: getTotalStars(), coins: getTotalCoins(), streak: saveState.streak || 0,
     hero: { x: width / 2, y: height / 2 }, pickups: [], enemies: [], world: { w: width, h: height }
   });
+  window.__advance = advance;
+  window.__returnToTitle = returnToTitle;
+  window.__start = start;
+  window.__triggerHint = triggerHint;
   window.__renderSlots = () => Object.fromEntries(
     Object.entries(sprites).map(([key, art]) => [key, art.toDataURL('image/png')])
   );
-  window.__autoplay = () => {
+  window.__autoplay = (force = false) => {
     const now = performance.now();
-    if (now - autoplayAt < 580 || phase === 'title' || phase === 'won') return;
+    if ((!force && now - autoplayAt < 580) || phase === 'title' || phase === 'won') return;
     autoplayAt = now;
     if (phase === 'order-complete') {
       advance();
@@ -1859,7 +2036,7 @@ var cancelAnimationFrame = function (id) { return (__wxRoot.cancelAnimationFrame
       confirmPreview();
       return;
     }
-    const step = currentLevel().solution.find(([key]) => !placed.has(key));
+    const step = currentLevel().solution?.find(([key]) => !placed.has(key));
     if (!step) return;
     const [key, x, y, rotated] = step;
     const g = geometry();
