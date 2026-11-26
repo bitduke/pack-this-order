@@ -2,6 +2,8 @@
 
 > 极简治愈系外卖装盒益智小游戏，支持 **微信小游戏** 与 **H5 Web 浏览器** 双端运行。
 
+🎮 **在线试玩链接**：[https://bitduke.github.io/pack-this-order/](https://bitduke.github.io/pack-this-order/)
+
 ---
 
 ## 🎮 游戏介绍
